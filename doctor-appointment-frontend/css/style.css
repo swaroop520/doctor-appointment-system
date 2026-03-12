@@ -332,6 +332,7 @@ body {
     }
 
     .nav-links {
+        display: flex; /* CRITICAL: Force flex display on mobile */
         position: fixed;
         top: 0;
         right: -100%;
