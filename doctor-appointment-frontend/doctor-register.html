@@ -12,7 +12,12 @@
 <body>
     <nav class="navbar glass-effect">
         <div class="logo">Care Connect <span style="font-size: 0.9rem; font-weight: 400; color: #fff;">| Medical Professionals</span></div>
-        <div class="nav-links">
+        <div class="menu-toggle" id="mobile-menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="nav-links" id="nav-links">
             <a href="index.html">Home</a>
             <a href="doctors.html">Doctors</a>
             <a href="login.html" class="btn btn-outline">Login</a>
@@ -115,6 +120,22 @@
                 msgDiv.style.color = "var(--danger)";
                 msgDiv.style.display = 'block';
             }
+        });
+
+
+        // Mobile Menu Toggle
+        const mobileMenu = document.getElementById('mobile-menu');
+        const navLinks = document.getElementById('nav-links');
+
+        mobileMenu.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+
+        // Close menu on link click
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+            });
         });
     </script>
 </body>

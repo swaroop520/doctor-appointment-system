@@ -11,10 +11,14 @@
 
 <body>
     <nav class="navbar glass-effect">
-        <div class="logo">Care Connect <span style="font-size: 0.9rem; font-weight: 400; color: #fff;">| Patient
-                Dashboard</span></div>
-        <div class="nav-links">
-            <span id="welcomeMsg" style="margin-right: 15px; color: var(--primary-light);"></span>
+        <div class="logo">Care Connect <span style="font-size: 0.9rem; font-weight: 400; color: #fff;">| Patient Dashboard</span></div>
+        <div class="menu-toggle" id="mobile-menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="nav-links" id="nav-links">
+            <span id="welcomeMsg" style="color: var(--primary-light);"></span>
             <button class="btn btn-danger" onclick="reportEmergency()">🚨 SOS Emergency</button>
             <button class="btn btn-outline" onclick="logout()">Logout</button>
         </div>
@@ -443,6 +447,21 @@
                 e.preventDefault(); // Prevent default action
                 sendChat();
             }
+        });
+
+        // Mobile Menu Toggle
+        const mobileMenu = document.getElementById('mobile-menu');
+        const navLinks = document.getElementById('nav-links');
+
+        mobileMenu.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+
+        // Close menu on link click
+        navLinks.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+            });
         });
     </script>
 </body>
