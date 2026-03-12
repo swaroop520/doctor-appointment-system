@@ -335,27 +335,37 @@ body {
         position: fixed;
         top: 0;
         right: -100%;
-        width: 70%;
+        width: 100%; /* Take full width on mobile for better alignment */
         height: 100vh;
-        background: var(--background);
+        background: rgba(10, 15, 28, 0.98); /* Solid dark background */
         backdrop-filter: blur(20px);
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        gap: 2rem;
-        transition: 0.5s;
-        border-left: 1px solid rgba(255, 255, 255, 0.1);
+        gap: 1.5rem;
+        transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1000;
         padding: 2rem;
-        box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
     }
 
     .nav-links.active {
         right: 0;
     }
 
-    .nav-links a {
+    .nav-links a, .nav-links .btn {
         margin: 0;
-        font-size: 1.2rem;
+        font-size: 1.3rem;
+        width: 80%; /* Width for buttons and links */
+        text-align: center;
+        padding: 1rem;
+    }
+
+    .nav-links span#welcomeMsg {
+        display: block;
+        width: 100%;
+        text-align: center;
+        margin-bottom: 1rem;
+        font-weight: 600;
     }
 
     /* Hero Section Responsive */

@@ -130,9 +130,9 @@
             errorDiv.style.display = 'none';
 
             try {
-                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                // Using fetchWithAuth for consistent API calls and header handling
+                const response = await fetchWithAuth('/auth/login', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ identifier, password })
                 });
 
@@ -142,27 +142,16 @@
                     const errData = await response.json();
                     errorDiv.textContent = errData.message || "Login failed. Please check credentials.";
                     errorDiv.style.display = 'block';
+                    btn.disabled = false;
+                    btn.textContent = "Secure Login";
                 }
             } catch (err) {
-                errorDiv.textContent = "Server error. Please try again later.";
+                console.error("Login bug:", err);
+                errorDiv.textContent = "Server connection error. Please try again later.";
                 errorDiv.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = "Secure Login";
             }
-        });
-
-
-        // Mobile Menu Toggle
-        const mobileMenu = document.getElementById('mobile-menu');
-        const navLinks = document.getElementById('nav-links');
-
-        mobileMenu.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
-        });
-
-        // Close menu on link click
-        navLinks.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                navLinks.classList.remove('active');
-            });
         });
     </script>
 </body>

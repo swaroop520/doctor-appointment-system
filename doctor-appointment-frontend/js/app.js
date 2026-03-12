@@ -1,9 +1,11 @@
 console.log("App Initialized");
 
 // Base URL for API calls
-const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+window.API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? "http://localhost:8080/api"
     : "https://doctor-appointment-system-yhsg.onrender.com/api";
+
+const API_BASE_URL = window.API_BASE_URL;
 
 // Fetch with JWT Support
 async function fetchWithAuth(url, options = {}) {
@@ -42,3 +44,28 @@ async function fetchWithAuth(url, options = {}) {
     }
     return response;
 }
+
+// Attach fetchWithAuth to window
+window.fetchWithAuth = fetchWithAuth;
+
+// Mobile Menu Toggle logic (helper for all pages)
+function initMobileMenu() {
+    const mobileMenu = document.getElementById('mobile-menu');
+    const navLinks = document.getElementById('nav-links');
+
+    if (mobileMenu && navLinks) {
+        mobileMenu.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+
+        // Close menu on link click
+        navLinks.querySelectorAll('a, button').forEach(item => {
+            item.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+            });
+        });
+    }
+}
+
+// Auto-init on DOM content load
+document.addEventListener('DOMContentLoaded', initMobileMenu);

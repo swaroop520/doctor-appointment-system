@@ -43,7 +43,8 @@
 
         async function loadPublicDoctors() {
             try {
-                const res = await fetch(`${API_BASE_URL}/doctors/all`);
+                // Using fetchWithAuth which handles the base URL internally
+                const res = await fetchWithAuth('/doctors/all');
                 if (res.ok) {
                     const data = await res.json();
                     const grid = document.getElementById('doctorsGrid');
@@ -75,21 +76,6 @@
                 document.getElementById('doctorsGrid').innerHTML = '<p style="color:var(--danger); grid-column: span 100%;">Error connecting to server.</p>';
             }
         }
-
-        // Mobile Menu Toggle
-        const mobileMenu = document.getElementById('mobile-menu');
-        const navLinks = document.getElementById('nav-links');
-
-        mobileMenu.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
-        });
-
-        // Close menu on link click
-        navLinks.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                navLinks.classList.remove('active');
-            });
-        });
     </script>
 </body>
 

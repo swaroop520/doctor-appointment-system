@@ -82,9 +82,8 @@
             }
 
             try {
-                const response = await fetch(`${API_BASE_URL}/auth/signup`, {
+                const response = await fetchWithAuth('/auth/signup', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email, password, role })
                 });
 
@@ -105,26 +104,11 @@
                     msgDiv.style.display = 'block';
                 }
             } catch (err) {
-                console.error(err);
+                console.error("Register bug:", err);
                 msgDiv.textContent = "Server error. Please try again later.";
                 msgDiv.style.color = "var(--danger)";
                 msgDiv.style.display = 'block';
             }
-        });
-
-        // Mobile Menu Toggle
-        const mobileMenu = document.getElementById('mobile-menu');
-        const navLinks = document.getElementById('nav-links');
-
-        mobileMenu.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
-        });
-
-        // Close menu on link click
-        navLinks.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                navLinks.classList.remove('active');
-            });
         });
     </script>
 </body>
