@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Doctors - Care Connect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <nav class="navbar glass-effect">
+        <div class="logo">Care Connect</div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="doctors.html">Doctors</a>
+            <a href="index.html#services">Services</a>
+            <a href="login.html" class="btn btn-outline">Login</a>
+            <a href="register.html" class="btn btn-primary">Register</a>
+        </div>
+    </nav>
+    <main>
+        <section style="padding: 5rem 2rem; max-width: 1200px; margin: auto; text-align: center;">
+            <h2 style="font-size: 2.5rem; margin-bottom: 2rem; color: #fff;">Our <span
+                    class="text-gradient">Specialists</span></h2>
+            <div id="doctorsGrid" class="dashboard-grid"
+                style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));gap: 2rem;">
+                <p>Loading doctors...</p>
+            </div>
+        </section>
+    </main>
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPublicDoctors();
+        });
+
+        async function loadPublicDoctors() {
+            try {
+                const res = await fetch('http://localhost:8080/api/doctors/all');
+                if (res.ok) {
+                    const data = await res.json();
+                    const grid = document.getElementById('doctorsGrid');
+                    grid.innerHTML = '';
+
+                    const approvedDoctors = data.filter(doc => doc.status === 'APPROVED' || !doc.status || doc.status === '');
+
+                    if (approvedDoctors.length === 0) {
+                        grid.innerHTML = '<p style="color:#aaa; grid-column: span 100%;">No doctors available at the moment.</p>';
+                        return;
+                    }
+
+                    approvedDoctors.forEach(doc => {
+                        grid.innerHTML += `
+                            <div class="card glass-effect" style="padding: 2.5rem 1.5rem; text-align: left;">
+                                <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #fff;">Dr. ${doc.user.name}</h3>
+                                <p style="color: var(--primary-light); font-weight: 600; margin-bottom: 1rem;">${doc.specialization}</p>
+                                <p style="color: #ccc; font-size: 0.95rem; margin-bottom: 0.5rem;"><strong>Schedule:</strong> ${doc.schedule !== 'Not Set' ? doc.schedule : 'Available Daily'}</p>
+                                <p style="color: #ccc; font-size: 0.95rem; margin-bottom: 1.5rem;"><strong>License:</strong> ${doc.licenseNumber}</p>
+                                <a href="login.html" class="btn btn-outline mt-3" style="width: 100%; text-align: center;">Book Appointment</a>
+                            </div>
+                        `;
+                    });
+                } else {
+                    document.getElementById('doctorsGrid').innerHTML = '<p style="color:var(--danger); grid-column: span 100%;">Failed to load doctors.</p>';
+                }
+            } catch (e) {
+                console.error(e);
+                document.getElementById('doctorsGrid').innerHTML = '<p style="color:var(--danger); grid-column: span 100%;">Error connecting to server.</p>';
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Registration - Care Connect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <nav class="navbar glass-effect">
+        <div class="logo">Care Connect <span style="font-size: 0.9rem; font-weight: 400; color: #fff;">| Medical
+                Professionals</span></div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="doctors.html">Doctors</a>
+            <a href="login.html" class="btn btn-outline">Login</a>
+        </div>
+    </nav>
+    <main class="center-content pb-4">
+        <div class="form-container glass-effect mt-5" style="max-width: 500px; border-top: 4px solid var(--primary);">
+            <h2 class="text-gradient">Doctor Verification</h2>
+            <p style="color: #aaa; font-size: 0.9rem; margin-bottom: 20px;">Join our premium network of certified
+                medical professionals.</p>
+            <form id="docRegisterForm">
+                <div class="form-group">
+                    <label for="name">Full Name (with Title)</label>
+                    <input type="text" id="name" required placeholder="e.g. Dr. John Doe">
+                </div>
+                <div class="form-group mt-3">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required placeholder="dr.smith@example.com">
+                </div>
+                <div class="form-group mt-3">
+                    <label for="mobileNumber">Mobile Number</label>
+                    <input type="tel" id="mobileNumber" required placeholder="e.g. 9876543210" pattern="[0-9]{10}">
+                </div>
+                <div class="form-group mt-3">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required>
+                </div>
+                <div class="form-group mt-3">
+                    <label for="specialization">Specialization</label>
+                    <input type="text" id="specialization" required placeholder="e.g. Cardiologist, General Physician">
+                </div>
+                <div class="form-group mt-3">
+                    <label for="licenseNumber">Medical License Number <span style="color:var(--danger)">*</span></label>
+                    <input type="text" id="licenseNumber" required value="LIC-84848" placeholder="e.g. LIC-123456"
+                        minlength="5">
+                    <small style="color: #666; font-size: 0.75rem;">Your license number will be verified before full
+                        account activation.</small>
+                </div>
+
+                <div id="regMsg" class="mt-2 text-center" style="display:none;"></div>
+                <button type="submit" class="btn btn-primary btn-block mt-4">Submit Application</button>
+            </form>
+        </div>
+    </main>
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('token')) {
+                const role = localStorage.getItem('role');
+                if (role === 'ADMIN') window.location.href = 'admin-dashboard.html';
+                else if (role === 'DOCTOR') window.location.href = 'doctor-dashboard.html';
+                else window.location.href = 'patient-dashboard.html';
+            }
+        });
+
+        document.getElementById('docRegisterForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const mobileNumber = document.getElementById('mobileNumber').value;
+            const password = document.getElementById('password').value;
+            const specialization = document.getElementById('specialization').value;
+            const licenseNumber = document.getElementById('licenseNumber').value;
+            const role = 'DOCTOR';
+            const msgDiv = document.getElementById('regMsg');
+
+            msgDiv.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, mobileNumber, password, role, specialization, licenseNumber })
+                });
+
+                if (response.ok) {
+                    msgDiv.textContent = "Application submitted securely! Redirecting to login...";
+                    msgDiv.style.color = "#10b981"; // success green
+                    msgDiv.style.display = 'block';
+                    setTimeout(() => window.location.href = 'login.html', 2000);
+                } else {
+                    const errData = await response.json();
+                    msgDiv.textContent = errData.message || "Registration failed. Verify your License Number.";
+                    msgDiv.style.color = "var(--danger)";
+                    msgDiv.style.display = 'block';
+                }
+            } catch (err) {
+                console.error(err);
+                msgDiv.textContent = "Server error processing application.";
+                msgDiv.style.color = "var(--danger)";
+                msgDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+
+</html>

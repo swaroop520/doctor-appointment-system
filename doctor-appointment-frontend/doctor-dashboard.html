@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard - Care Connect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <nav class="navbar glass-effect">
+        <div class="logo">Care Connect <span style="font-size: 0.9rem; font-weight: 400; color: #fff;">| Doctor
+                Portal</span></div>
+        <div class="nav-links">
+            <span id="welcomeMsg" style="margin-right: 15px; color: var(--primary-light);"></span>
+            <button class="btn btn-outline" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+    <main class="dashboard-grid">
+        <!-- Manage Appointments -->
+        <div class="card glass-effect" style="grid-column: span 2;">
+            <h3><span style="font-size: 1.5rem;">🩺</span> Scheduled Appointments</h3>
+            <p style="font-size: 0.85rem; color: #aaa; margin-bottom: 1rem;">View and manage your patient appointments.
+            </p>
+
+            <div id="doctorAppointments" class="mt-3" style="max-height: 400px; overflow-y: auto;">
+                <p>Loading appointments...</p>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!localStorage.getItem('token') || localStorage.getItem('role') !== 'DOCTOR') {
+                window.location.href = 'login.html';
+            }
+            document.getElementById('welcomeMsg').textContent = `Dr. ${localStorage.getItem('userName')}`;
+            loadDoctorAppointments();
+        });
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        async function loadDoctorAppointments() {
+            try {
+                const res = await fetchWithAuth('/appointments/my');
+                if (res.ok) {
+                    const data = await res.json();
+                    const list = document.getElementById('doctorAppointments');
+                    list.innerHTML = '';
+                    if (data.length === 0) { list.innerHTML = '<p style="color:#aaa;">No appointments scheduled yet.</p>'; return; }
+
+                    data.forEach(app => {
+                        const bg = app.type === 'EMERGENCY' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(255,255,255,0.05)';
+                        const strip = app.type === 'EMERGENCY' ? 'var(--danger)' : 'var(--primary)';
+
+                        let detailsHtml = '';
+                        if (app.type === 'EMERGENCY') {
+                            detailsHtml = `
+                                <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; margin-top: 10px; border: 1px solid rgba(239,68,68,0.2);">
+                                    <div style="color: var(--danger); font-weight: bold; margin-bottom: 5px;">🚨 Emergency Patient Info</div>
+                                    <strong>Patient Name:</strong> ${app.patientName} <br/>
+                                    <strong>Medical Info:</strong> ${app.patientDetails} <br/>
+                                    <strong>Emergency Note:</strong> ${app.diseaseDescription} <br/>
+                                    ${app.attachmentUrl ? `<a href="${API_BASE_URL.replace('/api', '')}${app.attachmentUrl}" target="_blank" style="color: var(--primary-light); display: inline-block; margin-top: 5px;">📎 View Photo/Video</a>` : ''}
+                                </div>
+                            `;
+                        }
+
+                        list.innerHTML += `
+                            <div style="background: ${bg}; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 5px solid ${strip}">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <strong>Date:</strong> ${app.appointmentDate} ${app.appointmentTime || 'N/A'}
+                                    <span style="color:${strip}; font-weight: bold;">${app.type}</span>
+                                </div>
+                                <strong>Status:</strong> ${app.status} <br/>
+                                <strong>General Notes:</strong> ${app.notes || 'None provided.'} <br/>
+                                ${detailsHtml}
+                                <div style="margin-top: 10px; display: flex; gap: 10px;">
+                                    ${app.status === 'PENDING' ? `<button class="btn btn-primary" style="background-color: #10b981; border-color: #10b981;" onclick="updateStatus(${app.id}, 'CONFIRMED')">Approve</button>` : ''}
+                                    ${app.status === 'PENDING' ? `<button class="btn btn-danger" onclick="updateStatus(${app.id}, 'REJECTED')">Reject</button>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function updateStatus(id, newStatus) {
+            try {
+                const res = await fetchWithAuth(`/appointments/${id}/status`, {
+                    method: 'PUT', body: JSON.stringify({ status: newStatus })
+                });
+                if (res.ok) loadDoctorAppointments();
+            } catch (e) { console.error(e); }
+        }
+    </script>
+</body>
+
+</html>

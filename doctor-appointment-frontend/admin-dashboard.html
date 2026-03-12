@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Care Connect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <nav class="navbar glass-effect">
+        <div class="logo">Care Connect <span style="font-size: 0.9rem; font-weight: 400; color: #fff;">| Admin Portal</span>
+        </div>
+        <div class="nav-links">
+            <span id="welcomeMsg" style="margin-right: 15px; color: var(--primary-light);"></span>
+            <button class="btn btn-outline" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+    <main class="dashboard-grid">
+        <div class="card glass-effect" style="grid-column: span 2;">
+            <h3><span style="font-size: 1.5rem;">📊</span> System Overview - All Appointments</h3>
+            <p style="font-size: 0.85rem; color: #aaa; margin-bottom: 1rem;">Monitor all system bookings and critical
+                emergencies.</p>
+
+            <div id="allAppointments" class="mt-3" style="max-height: 400px; overflow-y: auto;">
+                <p>Loading all system data...</p>
+            </div>
+
+            <h3 class="mt-5"><span style="font-size: 1.5rem;">👨‍👩‍👧‍👦</span> Manage Patients</h3>
+            <div id="allPatients" class="mt-3" style="max-height: 400px; overflow-y: auto;">
+                <p>Loading patients...</p>
+            </div>
+
+            <h3 class="mt-5"><span style="font-size: 1.5rem;">👨‍⚕️</span> Active Doctors</h3>
+            <div id="activeDoctors" class="mt-3" style="max-height: 400px; overflow-y: auto;">
+                <p>Loading active doctors...</p>
+            </div>
+
+            <h3 class="mt-5"><span style="font-size: 1.5rem;">⏳</span> Pending Doctor Approvals</h3>
+            <div id="pendingDoctors" class="mt-3" style="max-height: 400px; overflow-y: auto;">
+                <p>Loading pending registrations...</p>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!localStorage.getItem('token') || localStorage.getItem('role') !== 'ADMIN') {
+                window.location.href = 'login.html';
+            }
+            document.getElementById('welcomeMsg').textContent = `Admin: ${localStorage.getItem('userName')}`;
+            loadAllAppointments();
+            loadAllPatients();
+            loadActiveDoctors();
+            loadPendingDoctors();
+        });
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        async function loadAllAppointments() {
+            try {
+                const res = await fetchWithAuth('/appointments/all');
+                if (res.ok) {
+                    const data = await res.json();
+                    const list = document.getElementById('allAppointments');
+                    list.innerHTML = '';
+                    if (data.length === 0) { list.innerHTML = '<p style="color:#aaa;">No data found in the system.</p>'; return; }
+
+                    data.forEach(app => {
+                        const bg = app.type === 'EMERGENCY' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255,255,255,0.05)';
+                        const strip = app.type === 'EMERGENCY' ? 'var(--danger)' : 'var(--primary)';
+
+                        let detailsHtml = '';
+                        if (app.type === 'EMERGENCY') {
+                            let verifyBtn = '';
+                            if (app.status === 'PENDING_VERIFICATION') {
+                                verifyBtn = `
+                                    <div style="margin-top:10px; padding:10px; background:rgba(251,191,36,0.1); border-radius:6px; border:1px solid rgba(251,191,36,0.3);">
+                                        <p style="color:#fbbf24; font-size:0.8rem; margin:0; margin-bottom:10px;"><b>UTR:</b> ${app.transactionId || 'N/A'}</p>
+                                        <div style="display:flex; gap:10px;">
+                                            <button class="btn btn-success" onclick="verifyPayment(${app.id})" style="flex:1; padding:5px; font-size:0.8rem;">Verify & Confirm</button>
+                                            <button class="btn btn-danger" onclick="cancelPayment(${app.id})" style="flex:1; padding:5px; font-size:0.8rem;">Cancel Booking</button>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                            detailsHtml = `
+                                <div style="grid-column: span 3; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; margin-top: 10px; border: 1px solid rgba(239,68,68,0.2); font-size: 0.85rem;">
+                                    <div style="color: var(--danger); font-weight: bold;">🚨 Emergency: ${app.patientName}</div>
+                                    <div>${app.patientDetails}</div>
+                                    <div style="color: #ccc; font-style: italic;">"${app.diseaseDescription}"</div>
+                                    ${verifyBtn}
+                                </div>
+                            `;
+                        }
+
+                        list.innerHTML += `
+                            <div style="background: ${bg}; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid ${strip}; display: grid; grid-template-columns: 1fr 1fr 1fr;">
+                                <div><strong>ID:</strong> #${app.id}</div>
+                                <div><strong>Date/Time:</strong> ${app.appointmentDate} ${app.appointmentTime || ''}</div>
+                                <div><strong>Status:</strong> ${app.status}</div>
+                                <div style="color:${strip}; grid-column: span 3; margin-top: 5px;"><strong>Type:</strong> ${app.type}</div>
+                                ${detailsHtml}
+                            </div>
+                        `;
+                    });
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadPendingDoctors() {
+// ... existing loadPendingDoctors ...
+            try {
+                const res = await fetchWithAuth('/doctors/pending');
+                if (res.ok) {
+                    const data = await res.json();
+                    const list = document.getElementById('pendingDoctors');
+                    list.innerHTML = '';
+                    if (data.length === 0) { list.innerHTML = '<p style="color:#aaa;">No doctors pending approval.</p>'; return; }
+
+                    data.forEach(doc => {
+                        list.innerHTML += `
+                            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid var(--warning);">
+                                <strong>Name:</strong> ${doc.user.name} <br/>
+                                <strong>License Number:</strong> ${doc.licenseNumber} <br/>
+                                <strong>Specialization:</strong> ${doc.specialization} <br/>
+                                <button class="btn btn-primary mt-2" onclick="approveDoctor(${doc.id})">Approve Doctor</button>
+                            </div>
+                        `;
+                    });
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function approveDoctor(id) {
+            try {
+                const res = await fetchWithAuth(`/doctors/approve/${id}`, { method: 'PUT' });
+                if (res.ok) {
+                    alert('Doctor approved successfully!');
+                    loadPendingDoctors();
+                    loadActiveDoctors();
+                } else {
+                    alert('Error approving doctor');
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function verifyPayment(id) {
+            if (!confirm("Have you successfully verified the credited amount with this UTR in your bank?")) return;
+            try {
+                const res = await fetchWithAuth(`/appointments/${id}/confirm-payment`, { method: 'PUT' });
+                if (res.ok) {
+                    alert('Payment Verified and Booking Confirmed!');
+                    loadAllAppointments();
+                } else {
+                    alert('Error verifying payment');
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function cancelPayment(id) {
+            const reason = prompt("Enter a reason for cancellation (e.g., Invalid UTR, Payment Not Received):");
+            if (reason === null) return; // User pressed cancel on the prompt
+
+            try {
+                const res = await fetchWithAuth(`/appointments/${id}/cancel-payment`, { method: 'PUT' });
+                if (res.ok) {
+                    alert('Booking has been cancelled.');
+                    loadAllAppointments();
+                } else {
+                    alert('Error cancelling payment');
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadAllPatients() {
+            try {
+                const res = await fetchWithAuth('/users/patients');
+                if (res.ok) {
+                    const data = await res.json();
+                    const list = document.getElementById('allPatients');
+                    list.innerHTML = '';
+                    if (data.length === 0) { list.innerHTML = '<p style="color:#aaa;">No patients registered.</p>'; return; }
+
+                    data.forEach(user => {
+                        list.innerHTML += `
+                            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--primary-light);">
+                                <div>
+                                    <strong>Name:</strong> ${user.name} <br/>
+                                    <strong>Email:</strong> ${user.email} <br/>
+                                </div>
+                                <button class="btn btn-danger" onclick="deleteUser(${user.id})">Delete Patient</button>
+                            </div>
+                        `;
+                    });
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadActiveDoctors() {
+            try {
+                const res = await fetchWithAuth('/doctors/all');
+                if (res.ok) {
+                    const data = await res.json();
+                    const list = document.getElementById('activeDoctors');
+                    list.innerHTML = '';
+
+                    const approvedDocs = data.filter(d => d.status === 'APPROVED' || !d.status || d.status === '');
+                    if (approvedDocs.length === 0) { list.innerHTML = '<p style="color:#aaa;">No active doctors.</p>'; return; }
+
+                    approvedDocs.forEach(doc => {
+                        list.innerHTML += `
+                            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--success);">
+                                <div>
+                                    <strong>Name:</strong> ${doc.user.name} <br/>
+                                    <strong>Specialization:</strong> ${doc.specialization} <br/>
+                                    <strong>License:</strong> ${doc.licenseNumber}
+                                </div>
+                                <button class="btn btn-danger" onclick="deleteUser(${doc.user.id})">Remove Doctor</button>
+                            </div>
+                        `;
+                    });
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function deleteUser(userId) {
+            if (confirm("Are you sure you want to completely delete this user? All their appointments and records will also be deleted!")) {
+                try {
+                    const res = await fetchWithAuth(`/users/${userId}`, { method: 'DELETE' });
+                    if (res.ok) {
+                        alert('User deleted successfully!');
+                        loadAllPatients();
+                        loadActiveDoctors();
+                        loadPendingDoctors();
+                        loadAllAppointments();
+                    } else {
+                        alert('Error deleting user');
+                    }
+                } catch (e) { console.error(e); }
+            }
+        }
+    </script>
+</body>
+
+</html>

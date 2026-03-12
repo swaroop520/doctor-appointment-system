@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Dashboard - Care Connect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <nav class="navbar glass-effect">
+        <div class="logo">Care Connect <span style="font-size: 0.9rem; font-weight: 400; color: #fff;">| Patient
+                Dashboard</span></div>
+        <div class="nav-links">
+            <span id="welcomeMsg" style="margin-right: 15px; color: var(--primary-light);"></span>
+            <button class="btn btn-danger" onclick="reportEmergency()">🚨 SOS Emergency</button>
+            <button class="btn btn-outline" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+    <main class="dashboard-grid">
+        <!-- AI Chatbot Section -->
+        <div class="card glass-effect">
+            <h3><span style="font-size: 1.5rem;">🤖</span> Care Connect AI Assistant</h3>
+            <p style="font-size: 0.85rem; color: #aaa; margin-bottom: 1rem;">Get instant health advice or check symptom
+                severity.</p>
+            <div class="chat-container" id="chatBox">
+                <div class="chat-msg chat-ai">Hello! I am your AI assistant. How can I help you today?</div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <input type="text" id="chatInput" placeholder="Describe your symptoms..."
+                    style="flex:1; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 6px;">
+                <button class="btn btn-primary" onclick="sendChat()">Send</button>
+            </div>
+        </div>
+
+        <!-- Book Appointment Section -->
+        <div class="card glass-effect">
+            <h3><span style="font-size: 1.5rem;">📅</span> Book Appointment</h3>
+            <form id="bookForm" class="mt-3">
+                <div class="form-group">
+                    <label>Select Doctor</label>
+                    <select id="doctorId" required>
+                        <option value="">Loading doctors...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="appDate" required onclick="this.showPicker()">
+                </div>
+                <div class="form-group">
+                    <label>Time</label>
+                    <input type="time" id="appTime" required onclick="this.showPicker()">
+                </div>
+                <div class="form-group">
+                    <label>Notes/Symptoms</label>
+                    <textarea id="appNotes" rows="2" placeholder="Briefly describe why you are visiting..."></textarea>
+                </div>
+                <div id="bookMsg" class="mt-2 text-center" style="display:none;"></div>
+                <button type="submit" class="btn btn-primary btn-block mt-3">Confirm Booking</button>
+            </form>
+
+            <hr style="border-top: 1px solid rgba(255,255,255,0.1); margin: 2rem 0;">
+
+            <div id="emergencySection" style="display: none; background: rgba(255, 68, 68, 0.05); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,68,68,0.3); margin-top: 2rem;">
+                <h3 style="color: var(--danger);"><span style="font-size: 1.5rem;">🚑</span> Emergency Slot Booking</h3>
+                <p style="font-size: 0.85rem; margin-bottom: 1.5rem; color: #ccc;">Regular slots are full? Secure an emergency appointment (4 PM - 6 PM) for <b>₹1</b>.</p>
+                <form id="emergencyBookForm">
+                    <div class="form-group">
+                        <label>Patient Name</label>
+                        <input type="text" id="patientName" required placeholder="Enter full name of the patient">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;" class="mt-3">
+                        <div class="form-group">
+                            <label>Patient Age</label>
+                            <input type="number" id="patientAge" required placeholder="e.g. 45" style="width: 100%;">
+                        </div>
+                        <div class="form-group">
+                            <label>Patient Gender</label>
+                            <select id="patientGender" required style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 6px;">
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group mt-3">
+                        <label>Medical History</label>
+                        <textarea id="patientHistory" rows="2" required placeholder="Describe past illnesses, allergies, or chronic conditions..." style="width: 100%;"></textarea>
+                    </div>
+                    <div class="form-group mt-3">
+                        <label>Current Disease/Symptom Description</label>
+                        <textarea id="diseaseDescription" rows="3" required placeholder="Provide detailed description of the current critical situation..."></textarea>
+                    </div>
+                    <div class="form-group mt-3">
+                        <label>Photo/Video of Patient (Optional)</label>
+                        <input type="file" id="patientMedia" accept="image/*,video/*" style="background: transparent; border: none; padding: 0;">
+                    </div>
+                    
+                    <div id="slotCheckArea" class="mt-4" style="text-align: center;">
+                        <button type="button" id="checkSlotBtn" class="btn btn-outline" style="width: 100%; padding: 0.8rem; border-color: var(--danger); color: var(--danger);">
+                            Check Available Emergency Slot
+                        </button>
+                    </div>
+
+                    <div id="paymentArea" class="mt-4 p-4" style="display: none; background: rgba(255,255,255,0.05); border-radius: 10px; text-align: center; border: 1px solid rgba(255,255,255,0.1);">
+                        <div id="paymentInitial">
+                            <div id="assignedSlotDisplay" style="margin-bottom: 1.5rem; padding: 10px; background: rgba(239, 68, 68, 0.1); border-radius: 6px; border: 1px solid rgba(239,68,68,0.3);">
+                                <h4 style="color: var(--danger); margin: 0;">Assigned Slot: <span id="slotTime">--:--</span></h4>
+                                <p style="font-size: 0.8rem; color: #aaa; margin-top: 5px;">This slot is reserved for you. Please complete payment to confirm.</p>
+                            </div>
+
+                            <p style="margin-bottom: 1rem; color: #fff;">Scan to Pay <b>₹1.00</b></p>
+                            <div id="qrPlaceholder" style="margin: 1rem auto; width: 220px; height: 220px; background: #fff; padding: 12px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+                                <img src="assets/qr_code.png" alt="UPI QR Code" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=1&data=upi%3A%2F%2Fpay%3Fpa%3D6522940435483428%40ybl%26pn%3DCare%2520Connect%26am%3D1%26cu%3DINR'">
+                            </div>
+                            <p style="font-size: 0.8rem; color: #aaa; margin-top: 10px;">
+                                UPI ID: <b style="color: var(--success);">6522940435483428@ybl</b><br/>
+                                <span style="font-size: 0.7rem;">(Use this if scanning fails)</span>
+                            </p>
+                            
+                            <div class="form-group" style="text-align: left; margin-bottom: 1.5rem; margin-top: 1.5rem;">
+                                <label style="font-size: 0.8rem; color: #888;">Transaction ID / UTR (Enter AFTER Payment)</label>
+                                <input type="text" id="transactionId" placeholder="Enter 12-digit UTR number" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 8px; width: 100%; border-radius: 4px;">
+                            </div>
+                            
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <button type="button" id="openUpiBtn" class="btn btn-primary" style="width: 100%; padding: 0.8rem; font-weight: 600;">
+                                    📱 Pay via UPI App
+                                </button>
+                                <button type="button" id="payBtn" class="btn btn-success" style="width: 100%; padding: 0.8rem; font-size: 1.1rem; font-weight: 600;">
+                                    Verify & Confirm Booking
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="paymentVerifying" style="display: none; padding: 2rem 0;">
+                            <div class="spinner" style="margin: 0 auto 1.5rem; width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-top-color: var(--success); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                            <h4 style="color: #fff; margin-bottom: 0.5rem;">Verifying Payment...</h4>
+                            <p style="color: #aaa; font-size: 0.85rem;" id="verifyingStatus">Verifying credit to 6522940435483428@ybl</p>
+                        </div>
+                    </div>
+                    <div id="emergencyMsg" class="mt-3 text-center" style="display:none;"></div>
+                </form>
+            </div>
+
+            <style>
+                @keyframes spin { to { transform: rotate(360deg); } }
+                .spinner { display: block; }
+            </style>
+
+            <h3 class="mt-5"><span style="font-size: 1.5rem;">📋</span> My Appointments</h3>
+            <div id="appointmentsList" class="mt-3" style="max-height: 250px; overflow-y: auto;">
+                <p>Loading appointments...</p>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!localStorage.getItem('token') || localStorage.getItem('role') !== 'PATIENT') {
+                window.location.href = 'login.html';
+            }
+            document.getElementById('welcomeMsg').textContent = `Welcome, ${localStorage.getItem('userName')}`;
+            loadAppointments();
+            loadChatHistory();
+            loadDoctors();
+
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('action') === 'emergency') {
+                document.getElementById('emergencySection').style.display = 'block';
+                // scroll to it
+                setTimeout(() => {
+                    document.getElementById('emergencySection').scrollIntoView({ behavior: 'smooth' });
+                }, 500);
+            }
+        });
+
+        async function loadDoctors() {
+            try {
+                const res = await fetchWithAuth('/doctors/all');
+                if (res.ok) {
+                    const doctors = await res.json();
+                    const select = document.getElementById('doctorId');
+                    select.innerHTML = '<option value="">Select a Doctor</option>';
+                    doctors.forEach(doc => {
+                        select.innerHTML += `<option value="${doc.id}">Dr. ${doc.user.name} - ${doc.specialization}</option>`;
+                    });
+                }
+            } catch (e) { console.error("Could not load doctors", e); }
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        async function reportEmergency() {
+            document.getElementById('emergencySection').style.display = 'block';
+            document.getElementById('emergencySection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        async function loadAppointments() {
+            try {
+                const res = await fetchWithAuth('/appointments/my');
+                if (res.ok) {
+                    const data = await res.json();
+                    const list = document.getElementById('appointmentsList');
+                    list.innerHTML = '';
+                    if (data.length === 0) { list.innerHTML = '<p style="color:#aaa;">No appointments found.</p>'; return; }
+
+                    data.forEach(app => {
+                        let statusDisplay = app.status;
+                        if (app.status === 'PENDING_VERIFICATION') {
+                            statusDisplay = '<span style="color:#fbbf24; font-weight:bold;">Awaiting Payment Verification</span>';
+                        }
+                        list.innerHTML += `
+                            <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; margin-bottom: 10px; border-left: 4px solid ${app.type === 'EMERGENCY' ? 'var(--danger)' : 'var(--primary)'}">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <strong>Date:</strong> <span>${app.appointmentDate} ${app.appointmentTime || ''}</span>
+                                </div>
+                                <div style="font-size: 0.85rem; color: #ccc; margin-top:5px;">
+                                    Status: ${statusDisplay} | Type: ${app.type}
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        document.getElementById('bookForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const doctorId = document.getElementById('doctorId').value;
+            const date = document.getElementById('appDate').value;
+            const time = document.getElementById('appTime').value;
+            const notes = document.getElementById('appNotes').value;
+            const msgObj = document.getElementById('bookMsg');
+
+            try {
+                const res = await fetchWithAuth('/appointments/book', {
+                    method: 'POST', body: JSON.stringify({ doctorId, date, time, notes })
+                });
+                if (res.ok) {
+                    msgObj.textContent = "Booked Successfully!";
+                    msgObj.style.color = "var(--success)";
+                    msgObj.style.display = "block";
+                    loadAppointments();
+                } else {
+                    const data = await res.json();
+                    msgObj.textContent = data.message || "Failed to book. Slots might be full.";
+                    msgObj.style.color = "var(--danger)";
+                    msgObj.style.display = "block";
+                    if (msgObj.textContent.includes("booked") || msgObj.textContent.includes("full")) {
+                        document.getElementById('emergencySection').style.display = 'block';
+                    }
+                }
+            } catch (e) { 
+                console.error(e); 
+                msgObj.textContent = "Failed to book. Slots might be full.";
+                msgObj.style.color = "var(--danger)";
+                msgObj.style.display = "block";
+                document.getElementById('emergencySection').style.display = 'block';
+            }
+        });
+
+        document.getElementById('checkSlotBtn').addEventListener('click', async () => {
+            const patientName = document.getElementById('patientName').value;
+            const age = document.getElementById('patientAge').value;
+            const gender = document.getElementById('patientGender').value;
+            const history = document.getElementById('patientHistory').value;
+            const diseaseDescription = document.getElementById('diseaseDescription').value;
+
+            if (!patientName || !age || !gender || !history || !diseaseDescription) { 
+                alert("Please fill in all medical details first."); 
+                return; 
+            }
+
+            try {
+                const res = await fetchWithAuth('/appointments/emergency/available-slot');
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('slotTime').textContent = data.slot;
+                    document.getElementById('slotCheckArea').style.display = 'none';
+                    document.getElementById('paymentArea').style.display = 'block';
+                } else {
+                    const data = await res.json();
+                    alert(data.message || "No slots available.");
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Error checking availability.");
+            }
+        });
+
+        document.getElementById('openUpiBtn').addEventListener('click', () => {
+            const upiUrl = `upi://pay?pa=6522940435483428@ybl&pn=Care%20Connect&am=1&cu=INR`;
+            
+            // Provide feedback
+            const btn = document.getElementById('openUpiBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = "Opening UPI App...";
+            btn.disabled = true;
+
+            // Attempt to open
+            window.location.href = upiUrl;
+
+            // Fallback for desktop/unhandled protocol
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                // If the page is still visible, the app likely didn't open
+                if (!document.hidden) {
+                    alert("If your UPI app didn't open, please scan the QR code above or use this link on a mobile device.");
+                }
+            }, 2500);
+        });
+
+        document.getElementById('payBtn').addEventListener('click', async () => {
+            const transactionId = document.getElementById('transactionId').value;
+            if (!transactionId || transactionId.length < 5) {
+                alert("Please enter the 12-digit Transaction ID (UTR) you received after payment.");
+                return;
+            }
+
+            // Switch to Verifying State
+            document.getElementById('paymentInitial').style.display = 'none';
+            document.getElementById('paymentVerifying').style.display = 'block';
+            
+            const statusText = document.getElementById('verifyingStatus');
+            
+            // Simulated Detection Phase
+            setTimeout(() => { statusText.textContent = "Scanning bank records..."; }, 2000);
+            setTimeout(() => { statusText.textContent = "Matching amount credit (₹1)..."; }, 4000);
+            setTimeout(() => { statusText.textContent = "Finalizing verification..."; }, 6000);
+
+            setTimeout(async () => {
+                const patientName = document.getElementById('patientName').value;
+                const age = document.getElementById('patientAge').value;
+                const gender = document.getElementById('patientGender').value;
+                const history = document.getElementById('patientHistory').value;
+                const patientDetails = `Age: ${age}, Gender: ${gender}, History: ${history}`;
+                const diseaseDescription = document.getElementById('diseaseDescription').value;
+                const fileInput = document.getElementById('patientMedia');
+                const msgObj = document.getElementById('emergencyMsg');
+
+                const formData = new FormData();
+                formData.append('patientName', patientName);
+                formData.append('patientDetails', patientDetails);
+                formData.append('diseaseDescription', diseaseDescription);
+                formData.append('transactionId', transactionId);
+                formData.append('paymentStatus', 'PAID');
+                if (fileInput.files.length > 0) {
+                    formData.append('file', fileInput.files[0]);
+                }
+
+                try {
+                    const res = await fetchWithAuth('/appointments/emergency', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (res.ok) {
+                        document.getElementById('paymentVerifying').style.display = 'none';
+                        msgObj.textContent = "✅ Payment Info Submitted! Your Emergency Slot is now PENDING admin verification.";
+                        msgObj.style.color = "#fbbf24"; // Amber/Warning color
+                        msgObj.style.display = "block";
+                        document.getElementById('emergencyBookForm').reset();
+                        setTimeout(() => {
+                            document.getElementById('emergencySection').style.display = 'none';
+                            document.getElementById('paymentInitial').style.display = 'block';
+                            document.getElementById('slotCheckArea').style.display = 'block';
+                            document.getElementById('paymentArea').style.display = 'none';
+                        }, 5000);
+                        loadAppointments();
+                    } else {
+                        const data = await res.json();
+                        alert(data.message || "Detection failed. Please ensure amount was credited.");
+                        document.getElementById('paymentVerifying').style.display = 'none';
+                        document.getElementById('paymentInitial').style.display = 'block';
+                    }
+                } catch (e) { 
+                    console.error(e); 
+                    alert("A server error occurred. Please try again.");
+                    document.getElementById('paymentVerifying').style.display = 'none';
+                    document.getElementById('paymentInitial').style.display = 'block';
+                }
+            }, 8000);
+        });
+
+        async function loadChatHistory() {
+            try {
+                const res = await fetchWithAuth('/chatbot/history');
+                if (res.ok) {
+                    const data = await res.json();
+                    const box = document.getElementById('chatBox');
+                    // skip if empty, keep welcome message
+                    if (data.length > 0) {
+                        box.innerHTML = '';
+                        // API returns order desc, we need asc for UI
+                        data.reverse().forEach(log => {
+                            box.innerHTML += `<div class="chat-msg chat-user">${log.message}</div>`;
+                            box.innerHTML += `<div class="chat-msg chat-ai">${log.response}</div>`;
+                        });
+                        box.scrollTop = box.scrollHeight;
+                    }
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function sendChat() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (!message) return;
+            input.value = '';
+
+            const box = document.getElementById('chatBox');
+            box.innerHTML += `<div class="chat-msg chat-user">${message}</div>`;
+            box.scrollTop = box.scrollHeight;
+
+            box.innerHTML += `<div class="chat-msg chat-ai" id="typing">...</div>`;
+            box.scrollTop = box.scrollHeight;
+
+            try {
+                const res = await fetchWithAuth('/chatbot/message', {
+                    method: 'POST', body: JSON.stringify({ message })
+                });
+                document.getElementById('typing').remove();
+                if (res.ok) {
+                    const data = await res.json();
+                    box.innerHTML += `<div class="chat-msg chat-ai">${data.response}</div>`;
+                    box.scrollTop = box.scrollHeight;
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // Add event listener for Enter key on chat input
+        document.getElementById('chatInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault(); // Prevent default action
+                sendChat();
+            }
+        });
+    </script>
+</body>
+
+</html>
