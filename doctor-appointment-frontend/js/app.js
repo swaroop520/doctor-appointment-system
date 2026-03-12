@@ -3,7 +3,7 @@ console.log("App Initialized");
 // Base URL for API calls
 const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? "http://localhost:8080/api"
-    : "https://your-backend-url-on-render.com/api"; // REPLACE THIS after Render deployment
+    : "https://doctor-appointment-system-yhsg.onrender.com/api";
 
 // Fetch with JWT Support
 async function fetchWithAuth(url, options = {}) {
