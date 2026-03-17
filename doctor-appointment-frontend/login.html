@@ -139,15 +139,23 @@
                 if (response.ok) {
                     await handleLoginSuccess(response);
                 } else {
-                    const errData = await response.json();
-                    errorDiv.textContent = errData.message || "Login failed. Please check credentials.";
+                    // Try to parse JSON error, fallback to status text
+                    let errorMessage = "Login failed. Please check credentials.";
+                    try {
+                        const errData = await response.json();
+                        errorMessage = errData.message || errorMessage;
+                    } catch (parseErr) {
+                        console.error("Error parsing error response:", parseErr);
+                    }
+                    
+                    errorDiv.textContent = errorMessage;
                     errorDiv.style.display = 'block';
                     btn.disabled = false;
                     btn.textContent = "Secure Login";
                 }
             } catch (err) {
                 console.error("Login bug:", err);
-                errorDiv.textContent = "Server connection error. Please try again later.";
+                errorDiv.textContent = err.message || "Server connection error. Please try again later.";
                 errorDiv.style.display = 'block';
                 btn.disabled = false;
                 btn.textContent = "Secure Login";

@@ -115,7 +115,7 @@
                 }
             } catch (err) {
                 console.error("Doctor Register bug:", err);
-                msgDiv.textContent = "Server error processing application.";
+                msgDiv.textContent = err.message || "Server error processing application.";
                 msgDiv.style.color = "var(--danger)";
                 msgDiv.style.display = 'block';
             }

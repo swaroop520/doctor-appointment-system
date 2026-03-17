@@ -105,7 +105,7 @@
                 }
             } catch (err) {
                 console.error("Register bug:", err);
-                msgDiv.textContent = "Server error. Please try again later.";
+                msgDiv.textContent = err.message || "Server error. Please try again later.";
                 msgDiv.style.color = "var(--danger)";
                 msgDiv.style.display = 'block';
             }

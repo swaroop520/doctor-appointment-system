@@ -1,16 +1,26 @@
 console.log("App Initialized");
 
 // Base URL for API calls
-window.API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? "http://localhost:8080/api"
-    : "https://doctor-appointment-system-yhsg.onrender.com/api";
+const getApiBaseUrl = () => {
+    const hostname = window.location.hostname;
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return "http://localhost:8080/api";
+    }
+    // Hardcoded production URL as fallback if not otherwise determined
+    return "https://doctor-appointment-system-yhsg.onrender.com/api";
+};
 
+window.API_BASE_URL = getApiBaseUrl();
 const API_BASE_URL = window.API_BASE_URL;
 
-// Fetch with JWT Support
+// Fetch with JWT Support and Timeout
 async function fetchWithAuth(url, options = {}) {
     const token = localStorage.getItem('token');
-    
+    const timeout = options.timeout || 10000; // Default 10s timeout
+
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+
     // Initialize headers
     if (!options.headers) {
         options.headers = {};
@@ -38,11 +48,25 @@ async function fetchWithAuth(url, options = {}) {
         }
     }
 
-    const response = await fetch(`${API_BASE_URL}${url}`, options);
-    if (response.status === 401) {
-        window.location.href = 'login.html';
+    try {
+        const response = await fetch(`${API_BASE_URL}${url}`, {
+            ...options,
+            signal: controller.signal
+        });
+        clearTimeout(id);
+        
+        if (response.status === 401) {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+        return response;
+    } catch (error) {
+        clearTimeout(id);
+        if (error.name === 'AbortError') {
+            throw new Error('Connection timed out. The server might be starting up or is offline.');
+        }
+        throw error;
     }
-    return response;
 }
 
 // Attach fetchWithAuth to window
