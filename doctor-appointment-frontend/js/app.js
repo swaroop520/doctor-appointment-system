@@ -16,7 +16,7 @@ const API_BASE_URL = window.API_BASE_URL;
 // Fetch with JWT Support and Timeout
 async function fetchWithAuth(url, options = {}) {
     const token = localStorage.getItem('token');
-    const timeout = options.timeout || 10000; // Default 10s timeout
+    const timeout = options.timeout || 30000; // Default 30s timeout
 
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
@@ -63,7 +63,7 @@ async function fetchWithAuth(url, options = {}) {
     } catch (error) {
         clearTimeout(id);
         if (error.name === 'AbortError') {
-            throw new Error('Connection timed out. The server might be starting up or is offline.');
+            throw new Error('Connection timed out. Please ensure the backend server is running (usually on port 8080 locally) or wait for the cloud server to spin up.');
         }
         throw error;
     }
