@@ -301,7 +301,8 @@
         });
 
         document.getElementById('openUpiBtn').addEventListener('click', () => {
-            const upiUrl = `upi://pay?pa=6522940435483428@ybl&pn=Care%20Connect&am=1&cu=INR`;
+            const transactionRef = "REF" + Date.now(); // Unique transaction reference
+            const upiUrl = `upi://pay?pa=6522940435483428@ybl&pn=Care%20Connect&am=1&cu=INR&tr=${transactionRef}&tn=Emergency%20Slot%20Booking`;
             
             // Provide feedback
             const btn = document.getElementById('openUpiBtn');
