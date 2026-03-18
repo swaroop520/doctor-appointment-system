@@ -16,7 +16,7 @@ const API_BASE_URL = window.API_BASE_URL;
 // Fetch with JWT Support and Timeout
 async function fetchWithAuth(url, options = {}) {
     const token = localStorage.getItem('token');
-    const timeout = options.timeout || 30000; // Default 30s timeout
+    const timeout = options.timeout || 60000; // Increased to 60s for cold starts
 
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
@@ -91,5 +91,19 @@ function initMobileMenu() {
     }
 }
 
+// Wake up the server on load
+async function wakeUpServer() {
+    try {
+        console.log("Waking up server...");
+        await fetch(`${API_BASE_URL}/auth/ping`);
+        console.log("Server is awake.");
+    } catch (err) {
+        console.warn("Wake up call failed. Server might still be spinning up.", err);
+    }
+}
+
 // Auto-init on DOM content load
-document.addEventListener('DOMContentLoaded', initMobileMenu);
+document.addEventListener('DOMContentLoaded', () => {
+    initMobileMenu();
+    wakeUpServer();
+});
