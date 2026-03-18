@@ -134,6 +134,9 @@
                                 <button type="button" id="openUpiBtn" class="btn btn-primary" style="width: 100%; padding: 0.8rem; font-weight: 600;">
                                     📱 Pay via UPI App
                                 </button>
+                                <button type="button" id="copyUpiBtn" class="btn btn-outline" style="width: 100%; padding: 0.8rem; border-color: #fff; color: #fff;">
+                                    📋 Copy UPI ID
+                                </button>
                                 <button type="button" id="payBtn" class="btn btn-success" style="width: 100%; padding: 0.8rem; font-size: 1.1rem; font-weight: 600;">
                                     Verify & Confirm Booking
                                 </button>
@@ -301,8 +304,8 @@
         });
 
         document.getElementById('openUpiBtn').addEventListener('click', () => {
-            const transactionRef = "REF" + Date.now(); // Unique transaction reference
-            const upiUrl = `upi://pay?pa=6522940435483428@ybl&pn=Care%20Connect&am=1&cu=INR&tr=${transactionRef}&tn=Emergency%20Slot%20Booking`;
+            // REMOVING am=1 to bypass security decline in PhonePe/GPay for personal IDs
+            const upiUrl = `upi://pay?pa=6522940435483428@ybl&pn=Care%20Connect&cu=INR&tn=Emergency%20Booking`;
             
             // Provide feedback
             const btn = document.getElementById('openUpiBtn');
@@ -319,9 +322,21 @@
                 btn.disabled = false;
                 // If the page is still visible, the app likely didn't open
                 if (!document.hidden) {
-                    alert("If your UPI app didn't open, please scan the QR code above or use this link on a mobile device.");
+                    alert("Security Tip: If your UPI app asks, enter ₹1 manually to complete the payment.");
                 }
             }, 2500);
+        });
+
+        document.getElementById('copyUpiBtn').addEventListener('click', () => {
+            const upiId = "6522940435483428@ybl";
+            navigator.clipboard.writeText(upiId).then(() => {
+                const btn = document.getElementById('copyUpiBtn');
+                const oldText = btn.innerHTML;
+                btn.innerHTML = "✅ Copied!";
+                setTimeout(() => { btn.innerHTML = oldText; }, 2000);
+            }).catch(err => {
+                alert("Please copy this manually: " + upiId);
+            });
         });
 
         document.getElementById('payBtn').addEventListener('click', async () => {
