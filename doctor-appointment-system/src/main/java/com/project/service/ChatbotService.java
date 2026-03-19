@@ -39,15 +39,62 @@ public class ChatbotService {
     }
 
     private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=";
+package com.project.service;
+
+import com.project.entity.ChatLog;
+import com.project.entity.User;
+import com.project.repository.ChatLogRepository;
+import com.project.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.*;
+import java.time.LocalDateTime;
+import java.util.*;
+
+@Service
+public class ChatbotService {
+
+    @Autowired
+    private ChatLogRepository chatLogRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @Value("${google.gemini.api.key}")
+    private String geminiApiKey;
+    
+    @jakarta.annotation.PostConstruct
+    public void init() {
+        if (geminiApiKey == null || geminiApiKey.isEmpty() || geminiApiKey.contains("REPLACE")) {
+            System.err.println("ChatbotService: CRITICAL - Gemini API Key NOT detected!");
+        } else {
+            String masked = geminiApiKey.substring(0, Math.min(4, geminiApiKey.length())) + "....";
+            System.out.println("ChatbotService: Gemini API Key detected! Starts with: " + masked);
+        }
+    }
+
+    private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=";
 
     public ChatLog processMessage(Long userId, String message) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         String response;
-        if (geminiApiKey != null && !geminiApiKey.equals("REPLACE_WITH_YOUR_GEMINI_API_KEY") && !geminiApiKey.isEmpty()) {
+        if (geminiApiKey != null && !geminiApiKey.isEmpty() && !geminiApiKey.contains("REPLACE")) {
             System.out.println("Processing with Gemini AI...");
             response = generateGeminiResponse(message);
+            
+            // If it returned an error string, fall back to mock but keep the error info
+            if (response.startsWith("ERROR_FROM_GEMINI: ")) {
+                String error = response.substring(19);
+                response = generateAIResponseMock(message, error); // Assign to response, then proceed to save ChatLog
+            }
         } else {
             System.out.println("Processing with Rule-based Mock...");
             response = generateAIResponseMock(message);
@@ -101,19 +148,20 @@ public class ChatbotService {
                     if (content != null) {
                         List<Map<String, Object>> parts = (List<Map<String, Object>>) content.get("parts");
                         if (parts != null && !parts.isEmpty()) {
-                            return (String) parts.get(0).get("text");
+                            Map<String, Object> textPart = parts.get(0);
+                            return (String) textPart.get("text");
                         }
                     }
                 }
             }
-            return generateAIResponseMock(userMessage); // Fallback on empty/bad response
+            return "ERROR_FROM_GEMINI: No content or candidate found in Gemini API response.";
         } catch (Exception e) {
-            System.err.println("Gemini API Error: " + e.getMessage());
-            return generateAIResponseMock(userMessage); // Fallback on error
+            System.err.println("Error calling Gemini API: " + e.getMessage());
+            return "ERROR_FROM_GEMINI: " + e.getMessage();
         }
     }
 
-    private String generateAIResponseMock(String message) {
+    private String generateAIResponseMock(String message, String geminiError) {
         String lowerMsg = message.toLowerCase();
         String response = "";
         
@@ -211,13 +259,21 @@ public class ChatbotService {
                    "</div>";
         }
 
-        String versionInfo = "\n\n<small style='color: gray;'>Backend Version: 1.0.5-FINAL-DEBUG</small>";
-        String debugInfo = "\n\n---\n<b>DEBUG INFO:</b> " + 
+        String versionInfo = "\n\n<small style='color: gray;'>Backend Version: 1.0.6-ERROR-CAPTURE</small>";
+        String debugInfo = "\n\n-\n<b>DEBUG INFO:</b> " + 
             (geminiApiKey == null ? "Key is NULL" : 
             (geminiApiKey.isEmpty() ? "Key is EMPTY" : 
             (geminiApiKey.contains("REPLACE") ? "Key is STILL PLACEHOLDER" : 
             "Key detected: " + geminiApiKey.substring(0, Math.min(4, geminiApiKey.length())) + "... (" + geminiApiKey.length() + " chars)")));
         
+        if (geminiError != null) {
+            debugInfo += "\n\n<b>GEMINI ERROR:</b> <span style='color:red;'>" + geminiError + "</span>";
+        }
+        
         return response + versionInfo + debugInfo;
+    }
+
+    private String generateAIResponseMock(String message) {
+        return generateAIResponseMock(message, null);
     }
 }
