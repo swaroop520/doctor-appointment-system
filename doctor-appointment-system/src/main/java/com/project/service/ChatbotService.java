@@ -37,7 +37,7 @@ public class ChatbotService {
         }
     }
 
-    private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=";
+    private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=";
 
     public ChatLog processMessage(Long userId, String message) {
         User user = userRepository.findById(userId)
@@ -134,7 +134,7 @@ public class ChatbotService {
             response = "<div style='line-height:1.5;'><b>🤖 AI Assistant:</b> Please describe symptoms more clearly.</div>";
         }
 
-        String versionInfo = "\n\n<small style='color: gray;'>Backend Version: 1.0.7-BUILD-FIX</small>";
+        String versionInfo = "\n\n<small style='color: gray;'>Backend Version: 1.1.0-STABLE-URL</small>";
         String debugInfo = "\n\n---\n<b>DEBUG INFO:</b> " + 
             (geminiApiKey == null ? "Key NULL" : "Key OK (" + geminiApiKey.length() + " chars)");
         
