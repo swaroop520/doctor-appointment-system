@@ -30,10 +30,11 @@ public class ChatbotService {
     
     @jakarta.annotation.PostConstruct
     public void init() {
-        if (geminiApiKey == null || geminiApiKey.equals("REPLACE_WITH_YOUR_GEMINI_API_KEY") || geminiApiKey.isEmpty()) {
-            System.out.println("ChatbotService: Gemini API Key NOT found. Using Mock Fallback.");
+        if (geminiApiKey == null || geminiApiKey.isEmpty() || geminiApiKey.contains("REPLACE")) {
+            System.err.println("ChatbotService: CRITICAL - Gemini API Key NOT detected!");
         } else {
-            System.out.println("ChatbotService: Gemini API Key detected. Length: " + geminiApiKey.length());
+            String masked = geminiApiKey.substring(0, Math.min(4, geminiApiKey.length())) + "....";
+            System.out.println("ChatbotService: Gemini API Key detected! Starts with: " + masked);
         }
     }
 
