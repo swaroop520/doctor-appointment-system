@@ -7,8 +7,11 @@ import com.project.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.*;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class ChatbotService {
@@ -19,12 +22,24 @@ public class ChatbotService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @Value("${google.gemini.api.key}")
+    private String geminiApiKey;
+
+    private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=";
+
     public ChatLog processMessage(Long userId, String message) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Mock AI Rule-based response logic
-        String response = generateAIResponseMock(message);
+        String response;
+        if (geminiApiKey != null && !geminiApiKey.equals("REPLACE_WITH_YOUR_GEMINI_API_KEY") && !geminiApiKey.isEmpty()) {
+            response = generateGeminiResponse(message);
+        } else {
+            response = generateAIResponseMock(message);
+        }
 
         ChatLog chatLog = new ChatLog();
         chatLog.setUser(user);
@@ -37,6 +52,53 @@ public class ChatbotService {
 
     public List<ChatLog> getChatHistory(Long userId) {
         return chatLogRepository.findByUserIdOrderByTimestampDesc(userId);
+    }
+
+    private String generateGeminiResponse(String userMessage) {
+        try {
+            String url = GEMINI_API_URL + geminiApiKey;
+
+            // Prepare the request body for Gemini API
+            Map<String, Object> contents = new HashMap<>();
+            Map<String, Object> part = new HashMap<>();
+            
+            // System instruction to act as a medical assistant
+            String systemInstructions = "You are 'Care Connect AI', a professional medical assistant for a Doctor Appointment System. " +
+                    "Analyze the user's symptoms and provide: 1. Possible Cause, 2. Immediate Precautions, 3. Recommended OTC Medicines, and 4. Which specialist doctor to book. " +
+                    "Use HTML formatting (<b>, <br>, •) in your response. " +
+                    "IMPORTANT: If it sounds like a life-threatening emergency, start your response with a clear warning in red. " +
+                    "Keep advice general and always advise seeing a professional.";
+            
+            part.put("text", systemInstructions + "\n\nUser Symptom: " + userMessage);
+            contents.put("parts", Collections.singletonList(part));
+            
+            Map<String, Object> body = new HashMap<>();
+            body.put("contents", Collections.singletonList(contents));
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+
+            ResponseEntity<Map<String, Object>> responseEntity = restTemplate.postForEntity(url, entity, (Class<Map<String, Object>>) (Class<?>) Map.class);
+
+            if (responseEntity.getStatusCode() == HttpStatus.OK && responseEntity.getBody() != null) {
+                List<Map<String, Object>> candidates = (List<Map<String, Object>>) responseEntity.getBody().get("candidates");
+                if (candidates != null && !candidates.isEmpty()) {
+                    Map<String, Object> candidate = candidates.get(0);
+                    Map<String, Object> content = (Map<String, Object>) candidate.get("content");
+                    if (content != null) {
+                        List<Map<String, Object>> parts = (List<Map<String, Object>>) content.get("parts");
+                        if (parts != null && !parts.isEmpty()) {
+                            return (String) parts.get(0).get("text");
+                        }
+                    }
+                }
+            }
+            return generateAIResponseMock(userMessage); // Fallback on empty/bad response
+        } catch (Exception e) {
+            System.err.println("Gemini API Error: " + e.getMessage());
+            return generateAIResponseMock(userMessage); // Fallback on error
+        }
     }
 
     private String generateAIResponseMock(String message) {
