@@ -27,6 +27,15 @@ public class ChatbotService {
 
     @Value("${google.gemini.api.key}")
     private String geminiApiKey;
+    
+    @jakarta.annotation.PostConstruct
+    public void init() {
+        if (geminiApiKey == null || geminiApiKey.equals("REPLACE_WITH_YOUR_GEMINI_API_KEY") || geminiApiKey.isEmpty()) {
+            System.out.println("ChatbotService: Gemini API Key NOT found. Using Mock Fallback.");
+        } else {
+            System.out.println("ChatbotService: Gemini API Key detected. Length: " + geminiApiKey.length());
+        }
+    }
 
     private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=";
 
@@ -36,8 +45,10 @@ public class ChatbotService {
 
         String response;
         if (geminiApiKey != null && !geminiApiKey.equals("REPLACE_WITH_YOUR_GEMINI_API_KEY") && !geminiApiKey.isEmpty()) {
+            System.out.println("Processing with Gemini AI...");
             response = generateGeminiResponse(message);
         } else {
+            System.out.println("Processing with Rule-based Mock...");
             response = generateAIResponseMock(message);
         }
 
