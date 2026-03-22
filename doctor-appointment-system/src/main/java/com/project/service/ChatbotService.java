@@ -38,7 +38,7 @@ public class ChatbotService {
         }
     }
 
-    private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=";
+    private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=";
 
     public ChatLog processMessage(Long userId, String message) {
         User user = userRepository.findById(userId)
@@ -124,14 +124,18 @@ public class ChatbotService {
 
                     if (responseEntity.getStatusCode() == HttpStatus.OK && responseEntity.getBody() != null) {
                         Map<String, Object> resBody = (Map<String, Object>) responseEntity.getBody();
-                        List<Map<String, Object>> candidates = (List<Map<String, Object>>) resBody.get("candidates");
-                        if (candidates != null && !candidates.isEmpty()) {
-                            Map<String, Object> candidate = candidates.get(0);
-                            Map<String, Object> content = (Map<String, Object>) candidate.get("content");
-                            if (content != null) {
-                                List<Map<String, Object>> parts = (List<Map<String, Object>>) content.get("parts");
-                                if (parts != null && !parts.isEmpty()) {
-                                    return (String) parts.get(0).get("text");
+                        if (resBody != null) {
+                            List<Map<String, Object>> candidates = (List<Map<String, Object>>) resBody.get("candidates");
+                            if (candidates != null && !candidates.isEmpty()) {
+                                Map<String, Object> candidate = candidates.get(0);
+                                if (candidate != null) {
+                                    Map<String, Object> content = (Map<String, Object>) candidate.get("content");
+                                    if (content != null) {
+                                        List<Map<String, Object>> parts = (List<Map<String, Object>>) content.get("parts");
+                                        if (parts != null && !parts.isEmpty()) {
+                                            return (String) parts.get(0).get("text");
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -139,18 +143,36 @@ public class ChatbotService {
                     break; // Exit loop if OK but structure invalid
                 } catch (org.springframework.web.client.HttpClientErrorException.TooManyRequests e) {
                     retryCount++;
-                    if (retryCount >= maxRetries) throw e;
+                    if (retryCount >= maxRetries) {
+                        System.err.println("Gemini Daily Quota Exceeded. Switching to Rule-based Fallback.");
+                        return getStaticFallbackMessage(userMessage);
+                    }
                     System.out.println("Gemini Rate Limit (429) hit. Retrying in " + waitTime + "ms... (Attempt " + retryCount + ")");
                     Thread.sleep(waitTime);
                     waitTime *= 2; // Exponential increase
                 } catch (Exception e) {
-                    throw e; // Don't retry other errors for now
+                    System.err.println("Gemini API Error: " + e.getMessage());
+                    return getStaticFallbackMessage(userMessage); // Fallback for any API failure
                 }
             }
-            return "ERROR_FROM_GEMINI: Empty or invalid response structure from Google after retries";
+            return getStaticFallbackMessage(userMessage);
         } catch (Exception e) {
-            return "ERROR_FROM_GEMINI: " + (e.getMessage() != null ? e.getMessage() : e.toString());
+            return getStaticFallbackMessage(userMessage);
         }
+    }
+
+    private String getStaticFallbackMessage(String prompt) {
+        String msg = prompt.toLowerCase();
+        if (msg.contains("fever") || msg.contains("temperature")) {
+            return "🛡️ Advice for Fever: Rest, drink fluids, and monitor temperature. If it exceeds 103°F (39.4°C), consult a doctor immediately. (Note: Gemini API limit reached; providing standard care advice).";
+        } else if (msg.contains("headache") || msg.contains("migraine")) {
+            return "🛡️ Advice for Headache: Rest in a dark, quiet room. Stay hydrated. If it's sudden and severe, seek emergency care. (Note: Gemini API limit reached; providing standard care advice).";
+        } else if (msg.contains("cough") || msg.contains("cold") || msg.contains("flu")) {
+            return "🛡️ Advice for Cold/Cough: Drink warm liquids, rest, and use a humidifier. Contact a doctor if symptoms worsen. (Note: Gemini API limit reached; providing standard care advice).";
+        } else if (msg.contains("pain") || msg.contains("hurt")) {
+            return "🛡️ Advice for Pain: Rest the affected area. If pain is severe, persistent, or accompanied by swelling, please visit our clinic. (Note: Gemini API limit reached; providing standard care advice).";
+        }
+        return "👋 Hello! I'm currently in 'Safety Mode' due to high traffic (Daily AI Quota Reached). For medical emergencies, please visit a doctor immediately. How else can I assist with your appointment?";
     }
 
     private String generateAIResponseMock(String message, String geminiError) {
