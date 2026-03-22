@@ -166,37 +166,43 @@ public class ChatbotService {
         StringBuilder sb = new StringBuilder("<b>[SAFETY MODE: Knowledge Base Advice]</b><br>");
         boolean found = false;
 
+        // EMERGENCY - Check first for high priority
+        if (msg.contains("heart") || msg.contains("chest") || msg.contains("breath") || msg.contains("chok") || msg.contains("unconscious")) {
+            sb.append("• <b>🚨 CRITICAL EMERGENCY:</b> If you are experiencing chest pain, difficulty breathing, or heart-related symptoms, <b>CALL EMERGENCY SERVICES (e.g., 911 or 108) IMMEDIATELY.</b> Do not wait for a response.<br>");
+            found = true;
+        }
+
         if (msg.contains("fever") || msg.contains("temperature") || msg.contains("feverish") || msg.contains("hot body")) {
-            sb.append("• <b>Fever:</b> Use Paracetamol (Acetaminophen) for relief. Drink plenty of water and rest. Visit a doctor if fever persists for >3 days or stays above 103°F.<br>");
+            sb.append("• <b>Fever:</b> Use Paracetamol (Acetaminophen) for relief. Drink plenty of water and rest. Visit a doctor if fever persists for >3 days.<br>");
             found = true;
         }
         if (msg.contains("cold") || msg.contains("cough") || msg.contains("flu") || msg.contains("nose") || msg.contains("throat") || msg.contains("sneez")) {
-            sb.append("• <b>Cold/Cough:</b> Stay hydrated with warm liquids. Use steam inhalation or saline drops for congestion. Contact a doctor if you experience wheezing or difficulty breathing.<br>");
+            sb.append("• <b>Cold/Cough:</b> Stay hydrated with warm liquids. Use steam inhalation or saline drops for congestion.<br>");
             found = true;
         }
         if (msg.contains("headache") || msg.contains("head ache") || msg.contains("migraine") || msg.contains("dizzy") || msg.contains("giddiness")) {
-            sb.append("• <b>Head/Dizziness:</b> Rest in a quiet, dark room. Ensure you are hydrated. Seek immediate care for sudden, severe, 'thunderclap' headaches or if dizziness is accompanied by fainting.<br>");
+            sb.append("• <b>Head/Dizziness:</b> Rest in a quiet, dark room. Ensure you are hydrated.<br>");
             found = true;
         }
         if (msg.contains("skin") || msg.contains("allergy") || msg.contains("rash") || msg.contains("itch") || msg.contains("pimple") || msg.contains("acne")) {
-            sb.append("• <b>Skin/Allergy:</b> Clean the area gently. For minor rashes, an over-the-counter antihistamine or calamine lotion may help. Avoid scratching. Seek urgent care if you experience swelling of the face or difficulty breathing (Anaphylaxis).<br>");
+            sb.append("• <b>Skin/Allergy:</b> Clean the area gently. For minor rashes, an over-the-counter antihistamine may help.<br>");
             found = true;
         }
-        if (msg.contains("stomach") || msg.contains("belly") || msg.contains("pain") || msg.contains("gastric") || msg.contains("digestion") || msg.contains("vomit")) {
-            sb.append("• <b>Stomach/Digestion:</b> Stick to a bland diet (BRAT: Bananas, Rice, Applesauce, Toast). Stay hydrated. If pain is severe, localized (especially bottom-right), or persistent, consult a doctor immediately.<br>");
+        if ((msg.contains("stomach") || msg.contains("belly") || msg.contains("gastric") || msg.contains("digestion") || msg.contains("vomit")) && !msg.contains("heart")) {
+            sb.append("• <b>Stomach/Digestion:</b> Stick to a bland diet (BRAT). Stay hydrated. If pain is severe or localized, consult a doctor.<br>");
             found = true;
         }
-        if (msg.contains("injury") || msg.contains("cut") || msg.contains("wound") || msg.contains("bone") || msg.contains("fracture") || msg.contains("swelling")) {
-            sb.append("• <b>Injury/Pain:</b> Use the RICE method (Rest, Ice, Compression, Elevation). Clean minor cuts with mild soap and water. If you suspect a fracture or have deep bleeding, visit the ER.<br>");
+        if ((msg.contains("injury") || msg.contains("cut") || msg.contains("wound") || msg.contains("bone") || msg.contains("fracture") || msg.contains("swelling")) || (msg.contains("pain") && !found)) {
+            sb.append("• <b>General Pain/Injury:</b> Use the RICE method (Rest, Ice, Compression, Elevation). Clean minor cuts. If pain is severe, visit the clinic.<br>");
             found = true;
         }
         if (msg.contains("tablet") || msg.contains("medicine") || msg.contains("syrup") || msg.contains("pill")) {
-            sb.append("• <b>Medication Note:</b> Only common over-the-counter (OTC) meds like Paracetamol or Ibuprofen are suggested for minor symptoms. Always consult a pharmacist or doctor for specific dosages.<br>");
+            sb.append("• <b>Medication Note:</b> Only common over-the-counter (OTC) meds are suggested for minor symptoms. Consult a doctor for dosages.<br>");
             found = true;
         }
 
         if (!found) {
-            sb.append("👋 Hello! I'm currently in Safety Mode due to AI quota limits. For medical symptoms, please describe them (e.g., 'I have a fever' or 'skin rash'). For appointments, use the Dashboard features.");
+            sb.append("👋 Hello! I'm currently in Safety Mode due to AI quota limits. For medical symptoms, please describe them (e.g., 'I have a fever'). For appointments, use the Dashboard features.");
         } else {
             sb.append("<br><i>Note: Providing verified care guidelines while AI quota is resetting.</i>");
         }
