@@ -113,24 +113,41 @@ public class ChatbotService {
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
-            // Using raw Map class to avoid generic type mismatch during build
-            ResponseEntity<Map> responseEntity = restTemplate.postForEntity(url, entity, Map.class);
+            int maxRetries = 3;
+            int retryCount = 0;
+            long waitTime = 1000; // Start with 1 second
 
-            if (responseEntity.getStatusCode() == HttpStatus.OK && responseEntity.getBody() != null) {
-                Map<String, Object> resBody = (Map<String, Object>) responseEntity.getBody();
-                List<Map<String, Object>> candidates = (List<Map<String, Object>>) resBody.get("candidates");
-                if (candidates != null && !candidates.isEmpty()) {
-                    Map<String, Object> candidate = candidates.get(0);
-                    Map<String, Object> content = (Map<String, Object>) candidate.get("content");
-                    if (content != null) {
-                        List<Map<String, Object>> parts = (List<Map<String, Object>>) content.get("parts");
-                        if (parts != null && !parts.isEmpty()) {
-                            return (String) parts.get(0).get("text");
+            while (retryCount < maxRetries) {
+                try {
+                    // Using raw Map class to avoid generic type mismatch during build
+                    ResponseEntity<Map> responseEntity = restTemplate.postForEntity(url, entity, Map.class);
+
+                    if (responseEntity.getStatusCode() == HttpStatus.OK && responseEntity.getBody() != null) {
+                        Map<String, Object> resBody = (Map<String, Object>) responseEntity.getBody();
+                        List<Map<String, Object>> candidates = (List<Map<String, Object>>) resBody.get("candidates");
+                        if (candidates != null && !candidates.isEmpty()) {
+                            Map<String, Object> candidate = candidates.get(0);
+                            Map<String, Object> content = (Map<String, Object>) candidate.get("content");
+                            if (content != null) {
+                                List<Map<String, Object>> parts = (List<Map<String, Object>>) content.get("parts");
+                                if (parts != null && !parts.isEmpty()) {
+                                    return (String) parts.get(0).get("text");
+                                }
+                            }
                         }
                     }
+                    break; // Exit loop if OK but structure invalid
+                } catch (org.springframework.web.client.HttpClientErrorException.TooManyRequests e) {
+                    retryCount++;
+                    if (retryCount >= maxRetries) throw e;
+                    System.out.println("Gemini Rate Limit (429) hit. Retrying in " + waitTime + "ms... (Attempt " + retryCount + ")");
+                    Thread.sleep(waitTime);
+                    waitTime *= 2; // Exponential increase
+                } catch (Exception e) {
+                    throw e; // Don't retry other errors for now
                 }
             }
-            return "ERROR_FROM_GEMINI: Empty or invalid response structure from Google";
+            return "ERROR_FROM_GEMINI: Empty or invalid response structure from Google after retries";
         } catch (Exception e) {
             return "ERROR_FROM_GEMINI: " + (e.getMessage() != null ? e.getMessage() : e.toString());
         }
