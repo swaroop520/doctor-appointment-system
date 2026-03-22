@@ -163,16 +163,37 @@ public class ChatbotService {
 
     private String getStaticFallbackMessage(String prompt) {
         String msg = prompt.toLowerCase();
-        if (msg.contains("fever") || msg.contains("temperature")) {
-            return "🛡️ Advice for Fever: Rest, drink fluids, and monitor temperature. If it exceeds 103°F (39.4°C), consult a doctor immediately. (Note: Gemini API limit reached; providing standard care advice).";
-        } else if (msg.contains("headache") || msg.contains("migraine")) {
-            return "🛡️ Advice for Headache: Rest in a dark, quiet room. Stay hydrated. If it's sudden and severe, seek emergency care. (Note: Gemini API limit reached; providing standard care advice).";
-        } else if (msg.contains("cough") || msg.contains("cold") || msg.contains("flu")) {
-            return "🛡️ Advice for Cold/Cough: Drink warm liquids, rest, and use a humidifier. Contact a doctor if symptoms worsen. (Note: Gemini API limit reached; providing standard care advice).";
-        } else if (msg.contains("pain") || msg.contains("hurt")) {
-            return "🛡️ Advice for Pain: Rest the affected area. If pain is severe, persistent, or accompanied by swelling, please visit our clinic. (Note: Gemini API limit reached; providing standard care advice).";
+        StringBuilder sb = new StringBuilder("<b>[SAFETY MODE: Knowledge Base Advice]</b><br>");
+        boolean found = false;
+
+        if (msg.contains("fever") || msg.contains("temperature") || msg.contains("feverish")) {
+            sb.append("• <b>Fever:</b> Use Paracetamol (Acetaminophen) for relief. Drink plenty of water and rest. Visit a doctor if fever persists for >3 days or stays above 103°F.<br>");
+            found = true;
         }
-        return "👋 Hello! I'm currently in 'Safety Mode' due to high traffic (Daily AI Quota Reached). For medical emergencies, please visit a doctor immediately. How else can I assist with your appointment?";
+        if (msg.contains("cold") || msg.contains("cough") || msg.contains("flu") || msg.contains("nose")) {
+            sb.append("• <b>Cold/Cough:</b> Stay hydrated with warm liquids. Use steam inhalation or saline drops for congestion. Contact a doctor if you experience wheezing or difficulty breathing.<br>");
+            found = true;
+        }
+        if (msg.contains("headache") || msg.contains("head ache") || msg.contains("migraine")) {
+            sb.append("• <b>Headache:</b> Rest in a quiet, dark room. Ensure you are hydrated. Seek immediate care for sudden, severe, 'thunderclap' headaches.<br>");
+            found = true;
+        }
+        if (msg.contains("pain") || msg.contains("hurt") || msg.contains("body") || msg.contains("ache")) {
+            sb.append("• <b>Body Ache/Pain:</b> Rest the affected area. Warm compresses may help. If pain is localized and severe (like chest or abdominal pain), seek urgent medical help.<br>");
+            found = true;
+        }
+        if (msg.contains("tablet") || msg.contains("medicine") || msg.contains("syrup") || msg.contains("pill")) {
+            sb.append("• <b>Medication Note:</b> Only common over-the-counter (OTC) meds like Paracetamol or Ibuprofen are suggested for minor symptoms. Always consult a pharmacist or doctor for specific dosages.<br>");
+            found = true;
+        }
+
+        if (!found) {
+            sb.append("👋 Hello! I'm currently in Safety Mode due to AI quota limits. For medical symptoms, please describe them (e.g., 'I have a fever'). For appointments, use the Dashboard features.");
+        } else {
+            sb.append("<br><i>Note: Providing verified care guidelines while AI quota is resetting.</i>");
+        }
+
+        return sb.toString();
     }
 
     private String generateAIResponseMock(String message, String geminiError) {
