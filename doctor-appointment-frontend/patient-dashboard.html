@@ -453,8 +453,16 @@
                     const data = await res.json();
                     box.innerHTML += `<div class="chat-msg chat-ai">${data.response}</div>`;
                     box.scrollTop = box.scrollHeight;
+                } else {
+                    box.innerHTML += `<div class="chat-msg chat-ai" style="color: #f87171;">⚠️ Sorry, I couldn't process that message. Please try describing your symptoms differently.</div>`;
+                    box.scrollTop = box.scrollHeight;
                 }
-            } catch (e) { console.error(e); }
+            } catch (e) { 
+                console.error(e);
+                if (document.getElementById('typing')) document.getElementById('typing').remove();
+                box.innerHTML += `<div class="chat-msg chat-ai" style="color: #f87171;">❌ Connection Error: Please ensure your internet is working and the backend is running.</div>`;
+                box.scrollTop = box.scrollHeight;
+            }
         }
 
         // Add event listener for Enter key on chat input

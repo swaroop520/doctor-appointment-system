@@ -70,6 +70,10 @@
                 </div>
                 <div id="emailError" class="error-text mt-2" style="display:none; color: var(--danger); font-size: 0.85rem;"></div>
                 <button type="submit" class="btn btn-primary btn-block mt-4" id="loginBtn">Secure Login</button>
+                <div id="troubleshootLink" style="text-align: center; margin-top: 1rem; font-size: 0.8rem;">
+                    <a href="#" onclick="runDiagnostics(event)" style="color: var(--text-muted); text-decoration: underline;">Troubleshoot Connection</a>
+                </div>
+                <div id="troubleshootMsg" class="mt-2" style="display:none; padding: 1rem; border-radius: 8px; font-size: 0.85rem; background: rgba(255,255,255,0.05);"></div>
             </form>
 
 
@@ -161,6 +165,22 @@
                 btn.textContent = "Secure Login";
             }
         });
+        async function runDiagnostics(e) {
+            e.preventDefault();
+            const msgDiv = document.getElementById('troubleshootMsg');
+            msgDiv.style.display = 'block';
+            msgDiv.innerHTML = "🔍 Running diagnostics...";
+            msgDiv.style.color = "var(--primary-light)";
+
+            const result = await window.testConnection();
+            if (result.ok) {
+                msgDiv.innerHTML = "✅ " + result.message;
+                msgDiv.style.color = "#4ade80";
+            } else {
+                msgDiv.innerHTML = "❌ " + result.message;
+                msgDiv.style.color = "#f87171";
+            }
+        }
     </script>
 </body>
 

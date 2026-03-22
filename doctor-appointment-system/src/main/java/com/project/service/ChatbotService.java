@@ -29,6 +29,11 @@ public class ChatbotService {
     
     @jakarta.annotation.PostConstruct
     public void init() {
+        // Final fallback if placeholder is empty
+        if (geminiApiKey == null || geminiApiKey.isEmpty()) {
+            geminiApiKey = "AIzaSyC8NNPimtTV8TRmed6qs7pEj-dbcEaHOl4";
+        }
+
         if (geminiApiKey == null || geminiApiKey.isEmpty() || geminiApiKey.contains("REPLACE")) {
             System.err.println("ChatbotService: CRITICAL - Gemini API Key NOT detected!");
         } else {
@@ -37,7 +42,7 @@ public class ChatbotService {
         }
     }
 
-    private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=";
+    private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=";
 
     public ChatLog processMessage(Long userId, String message) {
         User user = userRepository.findById(userId)
@@ -84,13 +89,29 @@ public class ChatbotService {
             Map<String, Object> contents = new HashMap<>();
             Map<String, Object> part = new HashMap<>();
             
-            String systemInstructions = "You are 'Care Connect AI', a professional medical assistant. Analyze symptoms and provide Advice. Use HTML (<b>, <br>, •).";
+            String systemInstructions = "You are 'Care Connect AI', a professional medical assistant. Provide a highly simplified response in AT MOST 5 lines. Use HTML (<b>, <br>, •). Be concise and prioritize the most important advice.";
             
             part.put("text", systemInstructions + "\n\nUser Symptom: " + userMessage);
             contents.put("parts", Collections.singletonList(part));
             
             Map<String, Object> body = new HashMap<>();
             body.put("contents", Collections.singletonList(contents));
+            
+            // Allow more medical-related content by lowering safety thresholds
+            List<Map<String, String>> safetySettings = new ArrayList<>();
+            String[] categories = {
+                "HARM_CATEGORY_HARASSMENT", 
+                "HARM_CATEGORY_HATE_SPEECH", 
+                "HARM_CATEGORY_SEXUALLY_EXPLICIT", 
+                "HARM_CATEGORY_DANGEROUS_CONTENT"
+            };
+            for (String category : categories) {
+                Map<String, String> setting = new HashMap<>();
+                setting.put("category", category);
+                setting.put("threshold", "BLOCK_NONE"); // or BLOCK_ONLY_HIGH
+                safetySettings.add(setting);
+            }
+            body.put("safetySettings", safetySettings);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);

@@ -47,6 +47,10 @@
                 </div>
                 <div id="regMsg" class="mt-2 text-center" style="display:none;"></div>
                 <button type="submit" class="btn btn-primary btn-block mt-4">Register</button>
+                <div id="troubleshootLink" style="text-align: center; margin-top: 1rem; font-size: 0.8rem;">
+                    <a href="#" onclick="runDiagnostics(event)" style="color: var(--text-muted); text-decoration: underline;">Troubleshoot Connection</a>
+                </div>
+                <div id="troubleshootMsg" class="mt-2" style="display:none; padding: 1rem; border-radius: 8px; font-size: 0.85rem; background: rgba(255,255,255,0.05);"></div>
                 <p class="text-center mt-3" style="font-size:0.9rem; color: var(--text-muted);">
                     Already have an account? <a href="login.html" style="color: var(--primary-color);">Login here</a>
                 </p>
@@ -110,6 +114,22 @@
                 msgDiv.style.display = 'block';
             }
         });
+        async function runDiagnostics(e) {
+            e.preventDefault();
+            const msgDiv = document.getElementById('troubleshootMsg');
+            msgDiv.style.display = 'block';
+            msgDiv.innerHTML = "🔍 Running diagnostics...";
+            msgDiv.style.color = "var(--primary-light)";
+
+            const result = await window.testConnection();
+            if (result.ok) {
+                msgDiv.innerHTML = "✅ " + result.message;
+                msgDiv.style.color = "#4ade80";
+            } else {
+                msgDiv.innerHTML = "❌ " + result.message;
+                msgDiv.style.color = "#f87171";
+            }
+        }
     </script>
 </body>
 
