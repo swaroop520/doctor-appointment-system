@@ -29,13 +29,9 @@ public class ChatbotService {
     
     @jakarta.annotation.PostConstruct
     public void init() {
-        // Final fallback if placeholder is empty
-        if (geminiApiKey == null || geminiApiKey.isEmpty()) {
-            geminiApiKey = "AIzaSyC8NNPimtTV8TRmed6qs7pEj-dbcEaHOl4";
-        }
-
-        if (geminiApiKey == null || geminiApiKey.isEmpty() || geminiApiKey.contains("REPLACE")) {
-            System.err.println("ChatbotService: CRITICAL - Gemini API Key NOT detected!");
+        if (geminiApiKey == null || geminiApiKey.isEmpty() || geminiApiKey.contains("AIzaSy")) {
+            System.err.println("CRITICAL: Gemini API Key is missing, empty, or leaked!");
+            System.err.println("Please set the GEMINI_API_KEY environment variable.");
         } else {
             String masked = geminiApiKey.substring(0, Math.min(4, geminiApiKey.length())) + "....";
             System.out.println("ChatbotService: Gemini API Key detected! Starts with: " + masked);
