@@ -34,10 +34,12 @@ public class AppointmentController {
         String date = request.get("date");
         String time = request.get("time");
         String notes = request.get("notes");
+        String patientName = request.get("patientName");
+        String patientDetails = request.get("patientDetails");
 
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication()
                 .getPrincipal();
-        Appointment appointment = appointmentService.bookAppointment(userDetails.getId(), doctorId, date, time, notes);
+        Appointment appointment = appointmentService.bookAppointment(userDetails.getId(), doctorId, date, time, notes, patientName, patientDetails);
 
         return ResponseEntity.ok(appointment);
     }

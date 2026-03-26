@@ -5,7 +5,7 @@ import com.project.entity.Doctor;
 import java.util.List;
 
 public interface AppointmentService {
-    Appointment bookAppointment(Long patientId, Long doctorId, String date, String time, String notes);
+    Appointment bookAppointment(Long patientId, Long doctorId, String date, String time, String notes, String patientName, String patientDetails);
 
     List<Appointment> getPatientAppointments(Long patientId);
 

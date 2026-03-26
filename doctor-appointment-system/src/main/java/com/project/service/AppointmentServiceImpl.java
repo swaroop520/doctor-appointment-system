@@ -26,7 +26,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     private DoctorRepository doctorRepository;
 
     @Override
-    public Appointment bookAppointment(Long patientId, Long doctorId, String date, String time, String notes) {
+    public Appointment bookAppointment(Long patientId, Long doctorId, String date, String time, String notes, String patientName, String patientDetails) {
         User patient = userRepository.findById(patientId)
                 .orElseThrow(() -> new RuntimeException("Patient not found"));
         Doctor doctor = doctorRepository.findById(doctorId)
@@ -51,6 +51,8 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setStatus("PENDING"); // Set to PENDING so doctor can approve
         appointment.setType("NORMAL");
         appointment.setNotes(notes);
+        appointment.setPatientName(patientName);
+        appointment.setPatientDetails(patientDetails);
 
         return appointmentRepository.save(appointment);
     }

@@ -12,15 +12,19 @@ const getApiBaseUrl = () => {
 
     const hostname = window.location.hostname;
     const protocol = window.location.protocol;
-    
-    // Priority 2: Local development (localhost, 127.0.0.1, or local file)
-    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '' || protocol === 'file:') {
-        console.log("Environment: Local. Using localhost:8080");
+
+    // Priority 2: Local development (localhost, 127.0.0.1, local IP, or local file/extension)
+    const isLocalIP = hostname.startsWith('192.168.') || hostname.startsWith('10.0.') || hostname.endsWith('.local');
+    const isLocalProtocol = protocol === 'file:' || protocol.startsWith('chrome-extension') || protocol.startsWith('vscode-resource');
+    const isLocalHost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '' || hostname.includes('ngrok-free.app');
+
+    if (isLocalHost || isLocalProtocol || isLocalIP) {
+        console.log("Environment: Local Development. Using localhost:8080");
         return "http://localhost:8080/api";
     }
     
     // Priority 3: Production/Remote fallback
-    console.log("Environment: Production/Remote. Using Render URL.");
+    console.warn("Environment: Production/Remote. Using Render URL. (Check F12 if this is unexpected)");
     return "https://doctor-appointment-system-yhsg.onrender.com/api";
 };
 
