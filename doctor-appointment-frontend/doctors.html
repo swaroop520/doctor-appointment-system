@@ -345,6 +345,18 @@
             renderDoctors(filtered);
         }
 
+        function bookAppointment(doctorId) {
+            localStorage.setItem('selectedDoctorId', doctorId);
+            const token = localStorage.getItem('token');
+            const role = localStorage.getItem('role');
+            
+            if (token && role === 'PATIENT') {
+                window.location.href = 'patient-dashboard.html';
+            } else {
+                window.location.href = 'login.html';
+            }
+        }
+
         function renderDoctors(doctorsToRender) {
             const grid = document.getElementById('doctorsGrid');
             grid.innerHTML = '';
@@ -361,7 +373,7 @@
                         <p style="color: var(--primary-light); font-weight: 600; margin-bottom: 1rem;">${doc.specialization}</p>
                         <p style="color: #ccc; font-size: 0.95rem; margin-bottom: 0.5rem;"><strong>Schedule:</strong> ${doc.schedule !== 'Not Set' ? doc.schedule : 'Available Daily'}</p>
                         <p style="color: #ccc; font-size: 0.95rem; margin-bottom: 1.5rem;"><strong>License:</strong> ${doc.licenseNumber}</p>
-                        <a href="login.html" class="btn btn-outline mt-3" style="width: 100%; text-align: center;">Book Appointment</a>
+                        <button onclick="bookAppointment(${doc.id})" class="btn btn-outline mt-3" style="width: 100%; text-align: center; cursor: pointer; display: block;">Book Appointment</button>
                     </div>
                 `;
             });
