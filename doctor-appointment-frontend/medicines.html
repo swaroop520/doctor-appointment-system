@@ -187,7 +187,34 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             checkAuth();
-            renderMedicines(allMedicines);
+            
+            // Handle Category Redirection from Home Page
+            const urlParams = new URLSearchParams(window.location.search);
+            const categoryParam = urlParams.get('category');
+            
+            if (categoryParam) {
+                currentCategory = categoryParam === 'Digestive' ? 'Digestive' : categoryParam;
+                // Wait a bit for UI to be ready if needed, or just apply
+                applyFilters();
+                
+                // Update active state in category cards
+                setTimeout(() => {
+                    document.querySelectorAll('.specialty-card').forEach(card => {
+                        const name = card.querySelector('.specialty-name').textContent;
+                        const match = (categoryParam === 'Digestive' && name === 'Digestive Care') || 
+                                     (categoryParam === 'All' && name === 'All Products') ||
+                                     (name === categoryParam);
+                        
+                        if (match) card.classList.add('active');
+                        else card.classList.remove('active');
+                    });
+                }, 100);
+
+                // Smooth scroll to results
+                document.getElementById('resultsHeader').scrollIntoView({ behavior: 'smooth' });
+            } else {
+                renderMedicines(allMedicines);
+            }
             
             document.getElementById('medicineSearch').addEventListener('input', applyFilters);
             
