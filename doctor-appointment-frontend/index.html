@@ -122,24 +122,15 @@
             const btn = document.getElementById('findHospitalsBtn');
             const list = document.getElementById('hospitalsList');
             
-            if (!navigator.geolocation) {
-                alert("Geolocation is not supported by your browser");
-                return;
-            }
-
             btn.disabled = true;
             btn.textContent = "Locating...";
-            list.innerHTML = '<p style="color: #aaa; text-align: center; font-size: 0.9rem;">Accessing your location...</p>';
+            list.innerHTML = '<p style="color: #aaa; text-align: center; font-size: 0.9rem;">📍 Accessing your location...</p>';
 
-            navigator.geolocation.getCurrentPosition(async (position) => {
-                const lat = position.coords.latitude;
-                const lon = position.coords.longitude;
-                
+            async function fetchHospitals(lat, lon) {
                 btn.textContent = "Searching nearby...";
-                
                 try {
-                    // Overpass API to find hospitals within 5km
-                    const query = `[out:json];node(around:5000,${lat},${lon})["amenity"="hospital"];out;`;
+                    // Search within 5km radius
+                    const query = `[out:json][timeout:25];node(around:5000,${lat},${lon})["amenity"="hospital"];out;`;
                     const response = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
                     const data = await response.json();
                     
@@ -164,21 +155,77 @@
                         });
                         btn.textContent = "Update Results";
                     } else {
-                        list.innerHTML = '<p style="color: #aaa; text-align: center; font-size: 0.9rem;">No hospitals found within 5km.</p>';
-                        btn.textContent = "Try Again";
+                        // Try a wider 10km search if nothing found in 5km
+                        const query2 = `[out:json][timeout:25];node(around:10000,${lat},${lon})["amenity"="hospital"];out;`;
+                        const response2 = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query2)}`);
+                        const data2 = await response2.json();
+                        if (data2.elements && data2.elements.length > 0) {
+                            list.innerHTML = '<p style="color: #aaa; font-size: 0.8rem; margin-bottom: 8px;">No hospitals within 5km. Showing results within 10km:</p>';
+                            data2.elements.forEach(hospital => {
+                                const name = hospital.tags.name || "Unnamed Hospital";
+                                const phone = hospital.tags.phone || hospital.tags['contact:phone'] || "N/A";
+                                const address = hospital.tags['addr:street'] || "";
+                                const card = document.createElement('div');
+                                card.style.cssText = "background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.1);";
+                                card.innerHTML = `
+                                    <div style="color: #fff; font-weight: 600; margin-bottom: 4px;">${name}</div>
+                                    <div style="font-size: 0.8rem; color: #aaa; margin-bottom: 8px;">📞 ${phone} ${address ? '| 📍 ' + address : ''}</div>
+                                    <a href="https://www.google.com/maps/dir/?api=1&destination=${hospital.lat},${hospital.lon}" target="_blank" class="btn" style="width:100%; font-size: 0.75rem; padding: 5px; background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.4); color: #fff; text-decoration: none; text-align: center; border-radius: 4px; display:block;">Navigate</a>
+                                `;
+                                list.appendChild(card);
+                            });
+                            btn.textContent = "Update Results";
+                        } else {
+                            list.innerHTML = '<p style="color: #aaa; text-align: center; font-size: 0.9rem;">No hospitals found within 10km of your location.</p>';
+                            btn.textContent = "Try Again";
+                        }
                     }
                 } catch (error) {
                     console.error("Error fetching hospitals:", error);
-                    list.innerHTML = '<p style="color: var(--danger); text-align: center; font-size: 0.9rem;">Failed to fetch hospitals.</p>';
+                    list.innerHTML = '<p style="color: var(--danger); text-align: center; font-size: 0.9rem;">Failed to fetch hospitals. Please try again.</p>';
                     btn.textContent = "Retry";
                 }
                 btn.disabled = false;
-            }, (error) => {
-                console.error("Geolocation error:", error);
-                list.innerHTML = '<p style="color: var(--danger); text-align: center; font-size: 0.9rem;">Location access denied.</p>';
+            }
+
+            if (!navigator.geolocation) {
+                list.innerHTML = '<p style="color: var(--danger); text-align: center; font-size: 0.9rem;">Geolocation not supported by your browser.</p>';
                 btn.disabled = false;
                 btn.textContent = "Find Hospitals Near Me";
-            }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    await fetchHospitals(lat, lon);
+                },
+                async (error) => {
+                    console.warn("GPS denied or failed, trying IP-based location...", error);
+                    list.innerHTML = '<p style="color: #fbbf24; text-align: center; font-size: 0.9rem;">⚠️ GPS access denied. Using approximate IP-based location...</p>';
+                    try {
+                        // Fallback: use IP-based geolocation API
+                        const geoRes = await fetch('https://ip-api.com/json/?fields=lat,lon,city,status');
+                        const geoData = await geoRes.json();
+                        if (geoData.status === 'success') {
+                            list.innerHTML += `<p style="color: #aaa; text-align: center; font-size: 0.8rem;">📍 Detected city: ${geoData.city}</p>`;
+                            await fetchHospitals(geoData.lat, geoData.lon);
+                        } else {
+                            throw new Error("IP lookup failed");
+                        }
+                    } catch(e) {
+                        list.innerHTML = '<p style="color: var(--danger); text-align: center; font-size: 0.9rem;">❌ Could not determine your location. Please allow location access in your browser and try again.</p>';
+                        btn.disabled = false;
+                        btn.textContent = "Find Hospitals Near Me";
+                    }
+                },
+                {
+                    enableHighAccuracy: true,  // Use GPS, not WiFi estimate
+                    timeout: 10000,            // 10 second timeout
+                    maximumAge: 0              // Never use cached location
+                }
+            );
         }
 
         function redirectToEmergencyBooking() {
