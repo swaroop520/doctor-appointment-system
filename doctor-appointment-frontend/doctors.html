@@ -120,29 +120,101 @@
                         <span class="specialty-icon">👨‍⚕️</span>
                         <span class="specialty-name">Physician</span>
                     </div>
-                    <div class="specialty-card" onclick="filterBySpecialty('Dermatology')">
-                        <span class="specialty-icon">💆‍♀️</span>
-                        <span class="specialty-name">Dermatology</span>
-                    </div>
                     <div class="specialty-card" onclick="filterBySpecialty('Cardiology')">
                         <span class="specialty-icon">❤️</span>
                         <span class="specialty-name">Cardiology</span>
-                    </div>
-                    <div class="specialty-card" onclick="filterBySpecialty('Orthopaedics')">
-                        <span class="specialty-icon">🦴</span>
-                        <span class="specialty-name">Orthopaedics</span>
-                    </div>
-                    <div class="specialty-card" onclick="filterBySpecialty('Paediatrics')">
-                        <span class="specialty-icon">👶</span>
-                        <span class="specialty-name">Paediatrics</span>
                     </div>
                     <div class="specialty-card" onclick="filterBySpecialty('Neurology')">
                         <span class="specialty-icon">🧠</span>
                         <span class="specialty-name">Neurology</span>
                     </div>
+                    <div class="specialty-card" onclick="filterBySpecialty('Neurosurgery')">
+                        <span class="specialty-icon">🔪</span>
+                        <span class="specialty-name">Neurosurgery</span>
+                    </div>
+                    <div class="specialty-card" onclick="filterBySpecialty('Orthopaedics')">
+                        <span class="specialty-icon">🦴</span>
+                        <span class="specialty-name">Orthopaedics</span>
+                    </div>
+                    <div class="specialty-card" onclick="filterBySpecialty('Dermatology')">
+                        <span class="specialty-icon">💆‍♀️</span>
+                        <span class="specialty-name">Dermatology</span>
+                    </div>
+                    <div class="specialty-card" onclick="filterBySpecialty('Ophthalmology')">
+                        <span class="specialty-icon">👁️</span>
+                        <span class="specialty-name">Ophthalmology</span>
+                    </div>
                     <div class="specialty-card" onclick="filterBySpecialty('ENT')">
                         <span class="specialty-icon">👂</span>
                         <span class="specialty-name">ENT</span>
+                    </div>
+                    <div class="specialty-card" onclick="filterBySpecialty('Paediatrics')">
+                        <span class="specialty-icon">👶</span>
+                        <span class="specialty-name">Paediatrics</span>
+                    </div>
+                    <div class="specialty-card" onclick="filterBySpecialty('Gynecology')">
+                        <span class="specialty-icon">♀️</span>
+                        <span class="specialty-name">Gynecology</span>
+                    </div>
+                    <div class="specialty-card" onclick="filterBySpecialty('Obstetrics')">
+                        <span class="specialty-icon">🤰</span>
+                        <span class="specialty-name">Obstetrics</span>
+                    </div>
+                    <div class="specialty-card" onclick="filterBySpecialty('Psychiatry')">
+                        <span class="specialty-icon">🛋️</span>
+                        <span class="specialty-name">Psychiatry</span>
+                    </div>
+                    <div class="specialty-card" onclick="filterBySpecialty('Psychology')">
+                        <span class="specialty-icon">🗣️</span>
+                        <span class="specialty-name">Psychology</span>
+                    </div>
+                    <div class="specialty-card" onclick="filterBySpecialty('Anesthesiology')">
+                        <span class="specialty-icon">💉</span>
+                        <span class="specialty-name">Anesthesiology</span>
+                    </div>
+                    <div class="specialty-card" onclick="filterBySpecialty('Radiology')">
+                        <span class="specialty-icon">🩻</span>
+                        <span class="specialty-name">Radiology</span>
+                    </div>
+                    <div class="specialty-card" onclick="filterBySpecialty('Pathology')">
+                        <span class="specialty-icon">🔬</span>
+                        <span class="specialty-name">Pathology</span>
+                    </div>
+                    <div class="specialty-card" onclick="filterBySpecialty('Oncology')">
+                        <span class="specialty-icon">🎗️</span>
+                        <span class="specialty-name">Oncology</span>
+                    </div>
+                    <div class="specialty-card" onclick="filterBySpecialty('Endocrinology')">
+                        <span class="specialty-icon">🩸</span>
+                        <span class="specialty-name">Endocrinology</span>
+                    </div>
+                    <div class="specialty-card" onclick="filterBySpecialty('Gastroenterology')">
+                        <span class="specialty-icon">🥗</span>
+                        <span class="specialty-name">Gastroenterology</span>
+                    </div>
+                    <div class="specialty-card" onclick="filterBySpecialty('Nephrology')">
+                        <span class="specialty-icon">💧</span>
+                        <span class="specialty-name">Nephrology</span>
+                    </div>
+                    <div class="specialty-card" onclick="filterBySpecialty('Urology')">
+                        <span class="specialty-icon">🚻</span>
+                        <span class="specialty-name">Urology</span>
+                    </div>
+                    <div class="specialty-card" onclick="filterBySpecialty('Pulmonology')">
+                        <span class="specialty-icon">🫁</span>
+                        <span class="specialty-name">Pulmonology</span>
+                    </div>
+                    <div class="specialty-card" onclick="filterBySpecialty('Hematology')">
+                        <span class="specialty-icon">🩸</span>
+                        <span class="specialty-name">Hematology</span>
+                    </div>
+                    <div class="specialty-card" onclick="filterBySpecialty('Rheumatology')">
+                        <span class="specialty-icon">🦵</span>
+                        <span class="specialty-name">Rheumatology</span>
+                    </div>
+                    <div class="specialty-card" onclick="filterBySpecialty('Infectious Disease')">
+                        <span class="specialty-icon">🦠</span>
+                        <span class="specialty-name">Infectious</span>
                     </div>
                 </div>
             </div>
@@ -200,12 +272,30 @@
 
         const specialtyKeywords = {
             'General Physician': ['physician', 'general'],
-            'Dermatology': ['dermatolog', 'skin'],
             'Cardiology': ['cardiolog', 'heart'],
-            'Orthopaedics': ['orthopaedic', 'orthopedic', 'bone'],
-            'Paediatrics': ['paediatric', 'pediatric', 'child'],
             'Neurology': ['neurolog', 'brain', 'nerve'],
-            'ENT': ['ent', 'ear', 'nose', 'throat']
+            'Neurosurgery': ['neurosurgeon', 'neurosurgery', 'spine', 'brain surgery'],
+            'Orthopaedics': ['orthopaedic', 'orthopedic', 'bone', 'joint'],
+            'Dermatology': ['dermatolog', 'skin'],
+            'Ophthalmology': ['ophthalmolog', 'eye'],
+            'ENT': ['ent', 'ear', 'nose', 'throat', 'otolaryngolog'],
+            'Paediatrics': ['paediatric', 'pediatric', 'child'],
+            'Gynecology': ['gynecolog', 'gynaecolog', 'female reproductive'],
+            'Obstetrics': ['obstetric', 'pregnancy', 'childbirth'],
+            'Psychiatry': ['psychiatrist', 'psychiatry', 'mental'],
+            'Psychology': ['psychologist', 'psychology', 'behavior', 'therapy'],
+            'Anesthesiology': ['anesthesiolog', 'anaesthesiolog', 'pain', 'surgery'],
+            'Radiology': ['radiolog', 'imaging', 'x-ray', 'mri', 'ct scan'],
+            'Pathology': ['patholog', 'lab', 'biopsy', 'blood test'],
+            'Oncology': ['oncolog', 'cancer'],
+            'Endocrinology': ['endocrinolog', 'hormone', 'diabetes'],
+            'Gastroenterology': ['gastroenterolog', 'digestive', 'stomach'],
+            'Nephrology': ['nephrolog', 'kidney'],
+            'Urology': ['urolog', 'urinary'],
+            'Pulmonology': ['pulmonolog', 'lung'],
+            'Hematology': ['hematolog', 'haematolog', 'blood disorder'],
+            'Rheumatology': ['rheumatolog', 'autoimmune', 'joint disease'],
+            'Infectious Disease': ['infectious', 'infection']
         };
 
         function triggerSearch() {
