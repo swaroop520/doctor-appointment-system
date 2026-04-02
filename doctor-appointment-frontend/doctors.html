@@ -41,6 +41,7 @@
             font-size: 1.3rem;
             color: #ccc;
             cursor: pointer;
+            z-index: 10;
             transition: color 0.3s ease;
         }
         .search-icon:hover {
@@ -104,8 +105,8 @@
             <h2 style="font-size: 2.5rem; margin-bottom: 1rem; text-align: center; color: #fff;">Find a <span class="text-gradient">Doctor</span></h2>
             
             <div class="search-container">
-                <input type="text" id="doctorSearch" class="search-input" placeholder="Search Doctors, Specialities, Conditions etc.">
-                <span class="search-icon" onclick="applyFilters()" title="Click to search">🔍</span>
+                <input type="text" id="doctorSearch" class="search-input" placeholder="Search Doctors, Specialities, Conditions etc." onkeypress="if(event.key === 'Enter') triggerSearch()">
+                <span class="search-icon" onclick="triggerSearch()" title="Click to search">🔍</span>
             </div>
 
             <div style="margin-bottom: 3rem;">
@@ -207,8 +208,14 @@
             'ENT': ['ent', 'ear', 'nose', 'throat']
         };
 
+        function triggerSearch() {
+            applyFilters();
+            // Scroll down a bit to show results clearly
+            document.getElementById('doctorsGrid').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
         function applyFilters() {
-            const searchTerm = document.getElementById('doctorSearch').value.toLowerCase();
+            const searchTerm = document.getElementById('doctorSearch').value.toLowerCase().trim();
             const grid = document.getElementById('doctorsGrid');
             
             let filtered = allApprovedDoctors;
@@ -223,11 +230,26 @@
             }
 
             if (searchTerm) {
-                filtered = filtered.filter(doc => 
-                    (doc.user && doc.user.name && doc.user.name.toLowerCase().includes(searchTerm)) ||
-                    (doc.specialization && doc.specialization.toLowerCase().includes(searchTerm)) ||
-                    (doc.schedule && doc.schedule.toLowerCase().includes(searchTerm))
-                );
+                // Expand matching to common keywords to catch "Cardiologist" for "Cardiology"
+                let matchedKeywords = [searchTerm];
+                for (const [spec, keywords] of Object.entries(specialtyKeywords)) {
+                    if (keywords.some(k => searchTerm.includes(k) || k.includes(searchTerm))) {
+                        matchedKeywords = matchedKeywords.concat(keywords);
+                    }
+                }
+
+                filtered = filtered.filter(doc => {
+                    const nameMatch = doc.user && doc.user.name && doc.user.name.toLowerCase().includes(searchTerm);
+                    const scheduleMatch = doc.schedule && doc.schedule.toLowerCase().includes(searchTerm);
+                    
+                    let specMatch = false;
+                    if (doc.specialization) {
+                        const docSpec = doc.specialization.toLowerCase();
+                        specMatch = matchedKeywords.some(k => docSpec.includes(k));
+                    }
+
+                    return nameMatch || scheduleMatch || specMatch;
+                });
             }
 
             renderDoctors(filtered);
