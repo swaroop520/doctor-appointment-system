@@ -7,6 +7,74 @@
     <title>Our Doctors - Care Connect</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        .search-container {
+            max-width: 800px;
+            margin: 0 auto 3rem auto;
+            position: relative;
+        }
+        .search-input {
+            width: 100%;
+            padding: 18px 25px;
+            font-size: 1.1rem;
+            border-radius: 40px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            transition: all 0.3s ease;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 20px rgba(96, 165, 250, 0.3);
+        }
+        .search-input::placeholder {
+            color: #94a3b8;
+        }
+        .search-icon {
+            position: absolute;
+            right: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.3rem;
+            color: #ccc;
+        }
+        .specialties-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 15px;
+            margin-bottom: 3rem;
+        }
+        .specialty-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .specialty-card:hover, .specialty-card.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--primary-light);
+            transform: translateY(-5px);
+        }
+        .specialty-icon {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+        .specialty-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #eee;
+        }
+    </style>
 </head>
 
 <body class="hero-page">
@@ -26,19 +94,68 @@
         </div>
     </nav>
     <main>
-        <section style="padding: 5rem 2rem; max-width: 1200px; margin: auto; text-align: center;">
-            <h2 style="font-size: 2.5rem; margin-bottom: 2rem; color: #fff;">Our <span
-                    class="text-gradient">Specialists</span></h2>
+        <section style="padding: 5rem 2rem; max-width: 1200px; margin: auto;">
+            
+            <h2 style="font-size: 2.5rem; margin-bottom: 1rem; text-align: center; color: #fff;">Find a <span class="text-gradient">Doctor</span></h2>
+            
+            <div class="search-container">
+                <input type="text" id="doctorSearch" class="search-input" placeholder="Search Doctors, Specialities, Conditions etc.">
+                <span class="search-icon">🔍</span>
+            </div>
+
+            <div style="margin-bottom: 3rem;">
+                <h3 style="font-size: 1.3rem; margin-bottom: 1.5rem; color: #fff; text-align: left;">Browse by Specialties</h3>
+                <div class="specialties-grid">
+                    <div class="specialty-card active" onclick="filterBySpecialty('All')">
+                        <span class="specialty-icon">🌐</span>
+                        <span class="specialty-name">All</span>
+                    </div>
+                    <div class="specialty-card" onclick="filterBySpecialty('General Physician')">
+                        <span class="specialty-icon">👨‍⚕️</span>
+                        <span class="specialty-name">Physician</span>
+                    </div>
+                    <div class="specialty-card" onclick="filterBySpecialty('Dermatology')">
+                        <span class="specialty-icon">💆‍♀️</span>
+                        <span class="specialty-name">Dermatology</span>
+                    </div>
+                    <div class="specialty-card" onclick="filterBySpecialty('Cardiology')">
+                        <span class="specialty-icon">❤️</span>
+                        <span class="specialty-name">Cardiology</span>
+                    </div>
+                    <div class="specialty-card" onclick="filterBySpecialty('Orthopaedics')">
+                        <span class="specialty-icon">🦴</span>
+                        <span class="specialty-name">Orthopaedics</span>
+                    </div>
+                    <div class="specialty-card" onclick="filterBySpecialty('Paediatrics')">
+                        <span class="specialty-icon">👶</span>
+                        <span class="specialty-name">Paediatrics</span>
+                    </div>
+                    <div class="specialty-card" onclick="filterBySpecialty('Neurology')">
+                        <span class="specialty-icon">🧠</span>
+                        <span class="specialty-name">Neurology</span>
+                    </div>
+                    <div class="specialty-card" onclick="filterBySpecialty('ENT')">
+                        <span class="specialty-icon">👂</span>
+                        <span class="specialty-name">ENT</span>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="font-size: 1.3rem; margin-bottom: 1.5rem; color: #fff; text-align: left;">Our Specialists</h3>
             <div id="doctorsGrid" class="dashboard-grid"
-                style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));gap: 2rem;">
+                style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));gap: 2rem; padding: 0;">
                 <p>Loading doctors...</p>
             </div>
         </section>
     </main>
     <script src="js/app.js"></script>
     <script>
+        let allApprovedDoctors = [];
+        let currentSpecialty = 'All';
+
         document.addEventListener('DOMContentLoaded', () => {
             loadPublicDoctors();
+            document.getElementById('doctorSearch').addEventListener('input', applyFilters);
         });
 
         async function loadPublicDoctors() {
@@ -47,27 +164,8 @@
                 const res = await fetchWithAuth('/doctors/all');
                 if (res.ok) {
                     const data = await res.json();
-                    const grid = document.getElementById('doctorsGrid');
-                    grid.innerHTML = '';
-
-                    const approvedDoctors = data.filter(doc => doc.status === 'APPROVED' || !doc.status || doc.status === '');
-
-                    if (approvedDoctors.length === 0) {
-                        grid.innerHTML = '<p style="color:#aaa; grid-column: span 100%;">No doctors available at the moment.</p>';
-                        return;
-                    }
-
-                    approvedDoctors.forEach(doc => {
-                        grid.innerHTML += `
-                            <div class="card glass-effect" style="padding: 2.5rem 1.5rem; text-align: left;">
-                                <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #fff;">Dr. ${doc.user.name}</h3>
-                                <p style="color: var(--primary-light); font-weight: 600; margin-bottom: 1rem;">${doc.specialization}</p>
-                                <p style="color: #ccc; font-size: 0.95rem; margin-bottom: 0.5rem;"><strong>Schedule:</strong> ${doc.schedule !== 'Not Set' ? doc.schedule : 'Available Daily'}</p>
-                                <p style="color: #ccc; font-size: 0.95rem; margin-bottom: 1.5rem;"><strong>License:</strong> ${doc.licenseNumber}</p>
-                                <a href="login.html" class="btn btn-outline mt-3" style="width: 100%; text-align: center;">Book Appointment</a>
-                            </div>
-                        `;
-                    });
+                    allApprovedDoctors = data.filter(doc => doc.status === 'APPROVED' || !doc.status || doc.status === '');
+                    renderDoctors(allApprovedDoctors);
                 } else {
                     document.getElementById('doctorsGrid').innerHTML = '<p style="color:var(--danger); grid-column: span 100%;">Failed to load doctors.</p>';
                 }
@@ -75,6 +173,70 @@
                 console.error(e);
                 document.getElementById('doctorsGrid').innerHTML = '<p style="color:var(--danger); grid-column: span 100%;">Error connecting to server.</p>';
             }
+        }
+
+        function filterBySpecialty(specialty) {
+            currentSpecialty = specialty;
+            
+            // Update active state on cards
+            document.querySelectorAll('.specialty-card').forEach(card => {
+                if (card.querySelector('.specialty-name').textContent.includes(specialty) || 
+                    (specialty === 'General Physician' && card.querySelector('.specialty-name').textContent === 'Physician') ||
+                    (specialty === 'All' && card.querySelector('.specialty-name').textContent === 'All')) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('doctorSearch').value.toLowerCase();
+            const grid = document.getElementById('doctorsGrid');
+            
+            let filtered = allApprovedDoctors;
+
+            if (currentSpecialty !== 'All') {
+                filtered = filtered.filter(doc => 
+                    doc.specialization && doc.specialization.toLowerCase().includes(currentSpecialty.toLowerCase()) || 
+                    // Handle General Physician mappings if exact name differs
+                    (currentSpecialty === 'General Physician' && doc.specialization && doc.specialization.toLowerCase().includes('physician'))
+                );
+            }
+
+            if (searchTerm) {
+                filtered = filtered.filter(doc => 
+                    (doc.user && doc.user.name && doc.user.name.toLowerCase().includes(searchTerm)) ||
+                    (doc.specialization && doc.specialization.toLowerCase().includes(searchTerm)) ||
+                    (doc.schedule && doc.schedule.toLowerCase().includes(searchTerm))
+                );
+            }
+
+            renderDoctors(filtered);
+        }
+
+        function renderDoctors(doctorsToRender) {
+            const grid = document.getElementById('doctorsGrid');
+            grid.innerHTML = '';
+
+            if (doctorsToRender.length === 0) {
+                grid.innerHTML = '<p style="color:#aaa; grid-column: span 100%; text-align: center;">No doctors found matching your criteria.</p>';
+                return;
+            }
+
+            doctorsToRender.forEach(doc => {
+                grid.innerHTML += `
+                    <div class="card glass-effect" style="padding: 2.5rem 1.5rem; text-align: left;">
+                        <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #fff;">Dr. ${doc.user.name}</h3>
+                        <p style="color: var(--primary-light); font-weight: 600; margin-bottom: 1rem;">${doc.specialization}</p>
+                        <p style="color: #ccc; font-size: 0.95rem; margin-bottom: 0.5rem;"><strong>Schedule:</strong> ${doc.schedule !== 'Not Set' ? doc.schedule : 'Available Daily'}</p>
+                        <p style="color: #ccc; font-size: 0.95rem; margin-bottom: 1.5rem;"><strong>License:</strong> ${doc.licenseNumber}</p>
+                        <a href="login.html" class="btn btn-outline mt-3" style="width: 100%; text-align: center;">Book Appointment</a>
+                    </div>
+                `;
+            });
         }
     </script>
 </body>
