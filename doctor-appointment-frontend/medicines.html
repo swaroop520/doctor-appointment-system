@@ -139,16 +139,47 @@
     <script src="js/app.js"></script>
     <script>
         const allMedicines = [
+            // Fever
             { id: 1, name: "Paracetamol 650mg", category: "Fever", manufacturer: "CIPLA", price: 30.50, oldPrice: 45.00, icon: "💊", disease: ["fever", "headache", "body pain"] },
+            { id: 9, name: "Dolo 650", category: "Fever", manufacturer: "MICRO LABS", price: 32.00, oldPrice: 40.00, icon: "🌡️", disease: ["fever", "pain", "covid symptoms"] },
+            { id: 11, name: "Calpol 500mg", category: "Fever", manufacturer: "GSK", price: 28.00, oldPrice: 35.00, icon: "💊", disease: ["mild fever", "children fever", "pain"] },
+            { id: 12, name: "Crocin Advance", category: "Fever", manufacturer: "GSK", price: 35.00, oldPrice: 42.00, icon: "💊", disease: ["fever", "fast relief", "toothache"] },
+
+            // Pain Relief
             { id: 2, name: "Saridon Advance", category: "Pain Relief", manufacturer: "BAYER", price: 45.90, oldPrice: 54.00, icon: "🤕", disease: ["headache", "migraine", "pain"] },
-            { id: 3, name: "Vicks VapoRub 50g", category: "Cough & Cold", manufacturer: "P&G", price: 155.00, oldPrice: 175.00, icon: "💨", disease: ["cold", "cough", "nose block"] },
-            { id: 4, name: "Digene Gel 200ml", category: "Digestive", manufacturer: "ABBOTT", price: 210.00, oldPrice: 245.00, icon: "🧴", disease: ["acidity", "gas", "stomach pain"] },
             { id: 5, name: "Zandu Balm 25ml", category: "Pain Relief", manufacturer: "EMAMI", price: 85.00, oldPrice: 95.00, icon: "🍃", disease: ["headache", "stress", "cold"] },
-            { id: 6, name: "Boroline Cream", category: "Skin Care", manufacturer: "GD PHARMA", price: 40.00, oldPrice: 45.00, icon: "🧴", disease: ["skin care", "cuts", "dry skin"] },
-            { id: 7, name: "Benadryl Syrup", category: "Cough & Cold", manufacturer: "J&J", price: 125.00, oldPrice: 140.00, icon: "🧪", disease: ["dry cough", "allergy"] },
-            { id: 8, name: "Electral Powder", category: "Healthcare", manufacturer: "FDC", price: 20.00, oldPrice: 22.00, icon: "⚡", disease: ["dehydration", "weakness"] },
-            { id: 9, name: "Dolo 650", category: "Fever", manufacturer: "MICRO LABS", price: 32.00, oldPrice: 40.00, icon: "💊", disease: ["fever", "covid symptoms", "pain"] },
-            { id: 10, name: "Pudin Hara", category: "Digestive", manufacturer: "DABUR", price: 15.00, oldPrice: 20.00, icon: "🌱", disease: ["indigestion", "gas"] }
+            { id: 13, name: "Volini Spray 40g", category: "Pain Relief", manufacturer: "SUN PHARMA", price: 165.00, oldPrice: 195.00, icon: "💨", disease: ["back pain", "sprain", "muscle pain"] },
+            { id: 14, name: "Moov Gel 30g", category: "Pain Relief", manufacturer: "RECKITT", price: 145.00, oldPrice: 160.00, icon: "🩹", disease: ["muscle pain", "joint pain", "backache"] },
+            { id: 15, name: "Combiflam", category: "Pain Relief", manufacturer: "SANOFI", price: 42.00, oldPrice: 50.00, icon: "💊", disease: ["menstrual pain", "dental pain", "fever"] },
+            { id: 16, name: "Amrutanjan Balm", category: "Pain Relief", manufacturer: "AMRUTANJAN", price: 65.00, oldPrice: 75.00, icon: "🏺", disease: ["cold", "headache", "chest congestion"] },
+
+            // Cough & Cold
+            { id: 3, name: "Vicks VapoRub 50g", category: "Cough & Cold", manufacturer: "P&G", price: 155.00, oldPrice: 175.00, icon: "💆", disease: ["cold", "cough", "nose block"] },
+            { id: 7, name: "Benadryl Syrup", category: "Cough & Cold", manufacturer: "J&J", price: 125.00, oldPrice: 140.00, icon: "🧪", disease: ["dry cough", "allergy", "throat irritation"] },
+            { id: 17, name: "Alex Syrup 100ml", category: "Cough & Cold", manufacturer: "GLENMARK", price: 135.00, oldPrice: 155.00, icon: "🧪", disease: ["wet cough", "bronchitis"] },
+            { id: 18, name: "Strepsils 8 tabs", category: "Cough & Cold", manufacturer: "RECKITT", price: 48.00, oldPrice: 55.00, icon: "🍬", disease: ["sore throat", "throat infection", "cold"] },
+            { id: 19, name: "Cetzine Tablet", category: "Cough & Cold", manufacturer: "DR REDDY'S", price: 12.00, oldPrice: 15.00, icon: "💊", disease: ["sneezing", "runny nose", "allergy"] },
+
+            // Digestive
+            { id: 4, name: "Digene Gel 200ml", category: "Digestive", manufacturer: "ABBOTT", price: 210.00, oldPrice: 245.00, icon: "🧴", disease: ["acidity", "gas", "heartburn"] },
+            { id: 10, name: "Pudin Hara", category: "Digestive", manufacturer: "DABUR", price: 15.00, oldPrice: 20.00, icon: "🌱", disease: ["indigestion", "gas", "stomach relief"] },
+            { id: 20, name: "Eno Powder (6 Pack)", category: "Digestive", manufacturer: "GSK", price: 54.00, oldPrice: 60.00, icon: "⚡", disease: ["acid reflux", "bloating", "gas"] },
+            { id: 21, name: "Gelusil MPS Tablet", category: "Digestive", manufacturer: "PFIZER", price: 18.00, oldPrice: 22.00, icon: "💊", disease: ["gastritis", "ulcer", "stomach pain"] },
+            { id: 22, name: "Pantop-D", category: "Digestive", manufacturer: "ARISTO", price: 145.00, oldPrice: 170.00, icon: "💊", disease: ["morning acidity", "indigestion"] },
+
+            // Skin Care
+            { id: 6, name: "Boroline Cream", category: "Skin Care", manufacturer: "GD PHARMA", price: 40.00, oldPrice: 45.00, icon: "🧴", disease: ["dry skin", "cuts", "chapped lips"] },
+            { id: 23, name: "Betadine 5% 15g", category: "Skin Care", manufacturer: "WIN-MEDICARE", price: 115.00, oldPrice: 130.00, icon: "🧫", disease: ["wound", "burns", "infection"] },
+            { id: 24, name: "ItchGuard 15g", category: "Skin Care", manufacturer: "PARAS", price: 95.00, oldPrice: 110.00, icon: "🧴", disease: ["itching", "fungal infection", "skin allergy"] },
+            { id: 25, name: "Candid Powder 100g", category: "Skin Care", manufacturer: "GLENMARK", price: 145.00, oldPrice: 160.00, icon: "❄️", disease: ["sweat rash", "prickly heat"] },
+
+            // Healthcare
+            { id: 8, name: "Electral Powder", category: "Healthcare", manufacturer: "FDC", price: 20.00, oldPrice: 22.00, icon: "🍹", disease: ["dehydration", "weakness", "diarrhea"] },
+            { id: 26, name: "Revital H 30 Tabs", category: "Healthcare", manufacturer: "SUN PHARMA", price: 310.00, oldPrice: 350.00, icon: "🧔", disease: ["energy", "immunity", "vitamins"] },
+            { id: 27, name: "Limcee (Vitamin C)", category: "Healthcare", manufacturer: "ABBOTT", price: 25.00, oldPrice: 30.00, icon: "🍊", disease: ["immunity", "scurvy", "skin health"] },
+            { id: 28, name: "Zincovit 15 Tabs", category: "Healthcare", manufacturer: "APEX", price: 105.00, oldPrice: 120.00, icon: "💊", disease: ["multivitamin", "fatigue", "recovery"] },
+            { id: 29, name: "Shelcal 500mg", category: "Healthcare", manufacturer: "TORRENT", price: 118.00, oldPrice: 135.00, icon: "🦴", disease: ["calcium", "bone health", "deficiency"] },
+            { id: 30, name: "Allegra 120mg", category: "Healthcare", manufacturer: "SANOFI", price: 215.00, oldPrice: 240.00, icon: "💊", disease: ["allergy", "hives", "eye watering"] }
         ];
 
         let cart = [];
