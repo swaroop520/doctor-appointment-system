@@ -154,13 +154,22 @@
             </div>
             <p style="color: var(--primary-light); font-size: 0.8rem; margin-bottom: 1.5rem;">Registered VPA: careconnect@upi</p>
             
+            <!-- Transaction ID Input -->
+            <div id="utrContainer" style="margin-bottom: 1.5rem; text-align: left;">
+                <label for="utrNumber" style="display: block; color: #ccc; font-size: 0.85rem; margin-bottom: 8px;">Enter Transaction ID / UTR Number (from your app)</label>
+                <input type="text" id="utrNumber" placeholder="e.g. 304526847192" 
+                    style="width: 100%; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 0.95rem; outline: none; transition: 0.3s;">
+                <p id="utrError" style="display: none; color: #ff4444; font-size: 0.75rem; margin-top: 5px;">⚠ Please enter a valid transaction reference (min 8 chars)</p>
+                <p style="color: #888; font-size: 0.7rem; margin-top: 8px; line-height: 1.4;">Note: Our pharmacy team will manually cross-verify this UTR number before dispatching your order.</p>
+            </div>
+
             <div id="paymentStatus" style="display: none; margin-bottom: 1.5rem;">
                 <div class="loader-circle" style="display: inline-block; border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin-bottom: 10px;"></div>
-                <p style="color: var(--primary-light); font-size: 0.9rem;">Verifying your transaction...</p>
+                <p style="color: var(--primary-light); font-size: 0.9rem;">Connecting to bank & verifying UTR...</p>
             </div>
             
-            <button id="verifyBtn" class="btn btn-primary" style="width: 100%; padding: 1rem; font-weight: bold;" onclick="verifyPayment()">I have paid successfully</button>
-            <p style="color: #666; font-size: 0.75rem; margin-top: 1rem;">🔒 End-to-end Encrypted Payment Gateway</p>
+            <button id="verifyBtn" class="btn btn-primary" style="width: 100%; padding: 1rem; font-weight: bold;" onclick="verifyPayment()">Verify Transfer</button>
+            <p style="color: #666; font-size: 0.75rem; margin-top: 1rem;">🔒 256-bit Secure Transaction Handling</p>
         </div>
     </div>
 
@@ -576,8 +585,14 @@
             document.getElementById('paymentAmount').textContent = amount;
             document.getElementById('successAmount').textContent = amount;
             
+            // Reset UI
+            document.getElementById('utrNumber').value = '';
+            document.getElementById('utrError').style.display = 'none';
+            document.getElementById('utrContainer').style.display = 'block';
+            document.getElementById('verifyBtn').style.display = 'block';
+            document.getElementById('paymentStatus').style.display = 'none';
+
             // Generate dynamic UPI QR Code (using qrserver API)
-            // Format: upi://pay?pa=careconnect@upi&pn=CareConnect&am=AMOUNT&cu=INR
             const cleanAmount = amount.replace('₹', '').trim();
             const upiLink = `upi://pay?pa=careconnect@upi&pn=CareConnect&am=${cleanAmount}&cu=INR&tn=MedicineOrder`;
             const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}`;
@@ -588,17 +603,33 @@
         }
 
         function verifyPayment() {
+            const utrInput = document.getElementById('utrNumber');
+            const errorMsg = document.getElementById('utrError');
+            const utrValue = utrInput.value.trim();
+
+            if (utrValue.length < 8) {
+                errorMsg.style.display = 'block';
+                utrInput.style.borderColor = '#ff4444';
+                utrInput.focus();
+                return;
+            }
+
+            errorMsg.style.display = 'none';
+            utrInput.style.borderColor = 'rgba(255,255,255,0.1)';
+
             const btn = document.getElementById('verifyBtn');
             const status = document.getElementById('paymentStatus');
+            const utrContainer = document.getElementById('utrContainer');
             
             btn.style.display = 'none';
+            utrContainer.style.display = 'none';
             status.style.display = 'block';
             
             // Generate a random Order ID
             const orderId = 'CC-' + Math.random().toString(36).substr(2, 9).toUpperCase();
             document.getElementById('orderID').textContent = orderId;
             
-            // Simulate bank verification delay
+            // Simulate bank verification delay (longer for reality)
             setTimeout(() => {
                 document.getElementById('paymentModal').style.display = 'none';
                 document.getElementById('successModal').style.display = 'flex';
@@ -606,7 +637,7 @@
                 // Clear cart as payment is done
                 cart = [];
                 updateCartUI();
-            }, 3000);
+            }, 4500);
         }
 
         function closePaymentModal() {
