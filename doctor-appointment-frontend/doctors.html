@@ -7,6 +7,7 @@
     <title>Our Doctors - Care Connect</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src='https://meet.jit.si/external_api.js'></script>
     <style>
         .search-container {
@@ -384,12 +385,17 @@
             }
 
             // No phone number provided
-            Swal.fire({
-                title: 'No Contact Number',
-                text: 'This specialist has not provided a number for instant consultation. Please book a regular appointment instead.',
-                icon: 'warning',
-                confirmButtonColor: '#2563eb'
-            });
+            const msg = 'This specialist has not provided a number for instant consultation. Please book a regular appointment instead.';
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'No Contact Number',
+                    text: msg,
+                    icon: 'warning',
+                    confirmButtonColor: '#2563eb'
+                });
+            } else {
+                alert(msg);
+            }
         }
     </script>
 </body>
