@@ -62,4 +62,7 @@ public class Appointment {
 
     @Column(nullable = true)
     private Double amount;
+
+    @Column(nullable = true)
+    private String meetingId;
 }

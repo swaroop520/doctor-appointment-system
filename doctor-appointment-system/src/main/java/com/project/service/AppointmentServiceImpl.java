@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class AppointmentServiceImpl implements AppointmentService {
@@ -72,6 +73,11 @@ public class AppointmentServiceImpl implements AppointmentService {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new RuntimeException("Appointment not found"));
         appointment.setStatus(status);
+        if ("CONFIRMED".equals(status) || "APPROVED".equals(status)) {
+            if (appointment.getMeetingId() == null) {
+                appointment.setMeetingId(UUID.randomUUID().toString());
+            }
+        }
         return appointmentRepository.save(appointment);
     }
 
@@ -139,6 +145,9 @@ public class AppointmentServiceImpl implements AppointmentService {
             throw new RuntimeException("This is not an emergency appointment.");
         }
         appointment.setStatus("CONFIRMED");
+        if (appointment.getMeetingId() == null) {
+            appointment.setMeetingId(UUID.randomUUID().toString());
+        }
         return appointmentRepository.save(appointment);
     }
 

@@ -7,6 +7,7 @@
     <title>Patient Dashboard - Care Connect</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <script src='https://meet.jit.si/external_api.js'></script>
 </head>
 
 <body class="dashboard-page">
@@ -18,8 +19,9 @@
             <span></span>
         </div>
         <div class="nav-links" id="nav-links">
+            <span id="backendStatus" style="font-size: 0.75rem; padding: 4px 10px; border-radius: 20px; background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239,68,68,0.3); margin-right: 10px;">🔴 Server Offline</span>
             <span id="welcomeMsg" style="color: var(--primary-light);"></span>
-            <a href="medicines.html" style="color: #fff; text-decoration: none; font-size: 0.95rem;">Medicine</a>
+            <a href="medicines.html" class="btn btn-outline" style="border-radius: 5px; font-size: 0.9rem; margin-right: 10px;">💊 Buy Medicine</a>
             <button class="btn btn-danger" onclick="reportEmergency()">🚨 SOS Emergency</button>
             <button class="btn btn-outline" onclick="logout()">Logout</button>
         </div>
@@ -179,11 +181,73 @@
             </style>
 
             <h3 class="mt-5"><span style="font-size: 1.5rem;">📋</span> My Appointments</h3>
+            
+            <div id="callInfoAlert" style="background: rgba(37, 99, 235, 0.1); border: 1px solid rgba(37, 99, 235, 0.3); padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem; color: #fff; display: flex; align-items: flex-start; gap: 10px;">
+                <span style="font-size: 1.2rem;">💡</span>
+                <div>
+                    <b>Did you know?</b> Video/Audio call buttons will appear instantly in the list below once a doctor confirms your appointment.
+                </div>
+            </div>
+
             <div id="appointmentsList" class="mt-3" style="max-height: 250px; overflow-y: auto;">
                 <p>Loading appointments...</p>
             </div>
         </div>
+
+        <!-- Premium Pharmacy & Medicine Quick Access -->
+        <div class="card glass-effect" style="grid-column: span 2; padding: 0; overflow: hidden; border: 1px solid rgba(37, 99, 235, 0.2); min-height: 400px;">
+            <div style="background: linear-gradient(rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.7)), url('https://images.unsplash.com/photo-1587854692152-cbe660dbbb88?auto=format&fit=crop&q=80&w=1000'); background-size: cover; background-position: center; padding: 3rem; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                <div style="max-width: 600px;">
+                    <span style="background: var(--primary); color: white; padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1.5rem; display: inline-block;">Care Connect Pharmacy</span>
+                    <h2 style="font-size: 3rem; margin-bottom: 1rem; color: #fff; line-height: 1.1; font-weight: 800;">Your Health, <br/><span style="color: var(--primary-light);">Delivered Faster</span></h2>
+                    <p style="font-size: 1.1rem; color: #eee; margin-bottom: 2.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Order prescription medicines, lab tests, and wellness products from your local trusted pharmacies with direct WhatsApp connectivity.</p>
+                    
+                    <div style="display: flex; gap: 20px; justify-content: center; margin-bottom: 3rem; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: #fff; background: rgba(0,0,0,0.5); padding: 10px 20px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(5px);">
+                            <span>🛡️</span> Verified Shops
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: #fff; background: rgba(0,0,0,0.5); padding: 10px 20px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(5px);">
+                            <span>🚀</span> Instant Delivery
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: #fff; background: rgba(0,0,0,0.5); padding: 10px 20px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(5px);">
+                            <span>💬</span> WhatsApp Order
+                        </div>
+                    </div>
+
+                    <a href="medicines.html" class="btn btn-primary" style="padding: 18px 45px; border-radius: 50px; font-size: 1.2rem; font-weight: 800; box-shadow: 0 10px 40px rgba(37, 99, 235, 0.5); text-transform: uppercase; transition: transform 0.3s ease;">
+                        🏪 Visit Online Pharmacy
+                    </a>
+                </div>
+            </div>
+        </div>
     </main>
+
+    <!-- Call Modal -->
+    <div id="callModal" class="modal"
+        style="display: none; position: fixed; z-index: 5000; left: 0; top: 0; width: 100%; height: 100%; background-color: #000; align-items: center; justify-content: center;">
+        <div style="position: absolute; top: 20px; right: 30px; z-index: 5001; display: flex; gap: 15px;">
+            <button class="btn btn-danger" onclick="endCall()" style="border-radius: 50px; padding: 10px 25px; font-weight: bold;">End Call</button>
+        </div>
+        
+        <!-- Calling Overlay -->
+        <div id="callingOverlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, #1e293b, #0f172a); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5002;">
+            <div style="width: 120px; height: 120px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; margin-bottom: 2rem; box-shadow: 0 0 30px rgba(37, 99, 235, 0.5); animation: pulse 2s infinite;">
+                <span style="font-size: 3rem;">👨‍⚕️</span>
+            </div>
+            <h2 id="callingText" style="color: #fff; margin-bottom: 0.5rem;">Connecting to Doctor...</h2>
+            <p style="color: #60a5fa; font-size: 1.1rem;">Secure Video Channel</p>
+        </div>
+
+        <div id="jitsi-container" style="width: 100%; height: 100%;"></div>
+    </div>
+
+    <style>
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(37, 99, 235, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+        }
+    </style>
 
     <script src="js/app.js"></script>
     <script>
@@ -195,10 +259,13 @@
             if(document.getElementById('appPatientName')) {
                 document.getElementById('appPatientName').value = localStorage.getItem('userName') || '';
             }
+            checkBackend();
             loadAppointments();
             loadChatHistory();
             loadDoctors();
 
+            setInterval(checkBackend, 5000); // Re-check status every 5s
+            
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('action') === 'emergency') {
                 document.getElementById('emergencySection').style.display = 'block';
@@ -208,6 +275,25 @@
                 }, 500);
             }
         });
+
+        async function checkBackend() {
+            const statusIndicator = document.getElementById('backendStatus');
+            try {
+                const res = await fetch(`${API_BASE_URL.replace('/api', '')}/actuator/health`);
+                // If this is too complex, just a normal ping
+                const ping = await fetch(`${API_BASE_URL}/doctors/all`, { method: 'HEAD' });
+                
+                statusIndicator.innerHTML = "🟢 Server Online";
+                statusIndicator.style.backgroundColor = "rgba(34, 197, 94, 0.2)";
+                statusIndicator.style.color = "#4ade80";
+                statusIndicator.style.borderColor = "rgba(34, 197, 94, 0.3)";
+            } catch (e) {
+                statusIndicator.innerHTML = "🔴 Server Offline";
+                statusIndicator.style.backgroundColor = "rgba(239, 68, 68, 0.2)";
+                statusIndicator.style.color = "#f87171";
+                statusIndicator.style.borderColor = "rgba(239, 68, 68, 0.3)";
+            }
+        }
 
         async function loadDoctors() {
             try {
@@ -258,8 +344,14 @@
                                 <div style="display:flex; justify-content:space-between;">
                                     <strong>Date:</strong> <span>${app.appointmentDate} ${app.appointmentTime || ''}</span>
                                 </div>
-                                <div style="font-size: 0.85rem; color: #ccc; margin-top:5px;">
-                                    Status: ${statusDisplay} | Type: ${app.type}
+                                <div style="font-size: 0.85rem; color: #ccc; margin-top:5px; display:flex; justify-content:space-between; align-items:center;">
+                                    <span>Status: ${statusDisplay} | Type: ${app.type}</span>
+                                    ${app.status === 'CONFIRMED' && app.meetingId ? `
+                                        <div style="display:flex; gap:8px;">
+                                            <button onclick="startCall('${app.meetingId}', true)" class="btn btn-primary" style="font-size:0.7rem; padding:4px 10px;">📹 Video Call</button>
+                                            <button onclick="startCall('${app.meetingId}', false)" class="btn btn-outline" style="font-size:0.7rem; padding:4px 10px; border-color:var(--primary-light);">📞 Audio Call</button>
+                                        </div>
+                                    ` : ''}
                                 </div>
                             </div>
                         `;
@@ -505,6 +597,60 @@
                 sendChat();
             }
         });
+
+        // Call Handling Logic
+        let jitsiAPI = null;
+
+        function startCall(meetingId, isVideo = true) {
+            const modal = document.getElementById('callModal');
+            const overlay = document.getElementById('callingOverlay');
+            modal.style.display = 'flex';
+            overlay.style.display = 'flex';
+
+            const domain = 'meet.jit.si';
+            const options = {
+                roomName: `CareConnect-${meetingId}`,
+                width: '100%',
+                height: '100%',
+                parentNode: document.querySelector('#jitsi-container'),
+                configOverwrite: {
+                    startWithAudioMuted: false,
+                    startWithVideoMuted: !isVideo,
+                    prejoinPageEnabled: false
+                },
+                interfaceConfigOverwrite: {
+                    TOOLBAR_BUTTONS: [
+                        'microphone', 'camera', 'closedcaptions', 'desktop', 'fullscreen',
+                        'fodeviceselection', 'hangup', 'profile', 'chat', 'recording',
+                        'livestreaming', 'etherpad', 'sharedvideo', 'settings', 'raisehand',
+                        'videoquality', 'filmstrip', 'invite', 'feedback', 'stats', 'shortcuts',
+                        'tileview', 'videobackgroundblur', 'download', 'help', 'mute-everyone',
+                        'security'
+                    ]
+                }
+            };
+
+            // Remove existing if any
+            if (jitsiAPI) jitsiAPI.dispose();
+            
+            jitsiAPI = new JitsiMeetExternalAPI(domain, options);
+
+            // Hide overlay when someone joins or after timeout
+            jitsiAPI.addEventListener('videoConferenceJoined', () => {
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                }, 1000);
+            });
+        }
+
+        function endCall() {
+            if (jitsiAPI) {
+                jitsiAPI.dispose();
+                jitsiAPI = null;
+            }
+            document.getElementById('callModal').style.display = 'none';
+            document.getElementById('jitsi-container').innerHTML = '';
+        }
     </script>
 </body>
 
