@@ -265,10 +265,12 @@ body {
 
 /* Dashboard Grids */
 .dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
     padding: 2rem 5%;
+    max-width: 800px;
+    margin: 0 auto;
 }
 
 .card {
@@ -280,6 +282,7 @@ body {
     animation: fadeInUp 0.8s ease-out forwards;
     animation-delay: 0.2s;
     opacity: 0;
+    height: auto;
 }
 
 .card:hover {
@@ -296,7 +299,7 @@ body {
 
 /* Chatbot UI */
 .chat-container {
-    height: 400px;
+    height: 350px;
     overflow-y: auto;
     padding: 1rem;
     background: rgba(0, 0, 0, 0.2);
