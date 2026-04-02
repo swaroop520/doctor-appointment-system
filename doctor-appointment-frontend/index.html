@@ -178,7 +178,7 @@
                 list.innerHTML = '<p style="color: var(--danger); text-align: center; font-size: 0.9rem;">Location access denied.</p>';
                 btn.disabled = false;
                 btn.textContent = "Find Hospitals Near Me";
-            });
+            }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
         }
 
         function redirectToEmergencyBooking() {
