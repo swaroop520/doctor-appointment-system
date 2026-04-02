@@ -47,39 +47,6 @@
         .search-icon:hover {
             color: var(--primary-light);
         }
-        .specialties-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-            gap: 15px;
-            margin-bottom: 3rem;
-        }
-        .specialty-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 1.5rem 1rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
-        .specialty-card:hover, .specialty-card.active {
-            background: rgba(59, 130, 246, 0.2);
-            border-color: var(--primary-light);
-            transform: translateY(-5px);
-        }
-        .specialty-icon {
-            font-size: 2rem;
-            margin-bottom: 5px;
-        }
-        .specialty-name {
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: #eee;
-        }
     </style>
 </head>
 
@@ -94,6 +61,7 @@
         <div class="nav-links" id="nav-links">
             <a href="index.html">Home</a>
             <a href="doctors.html">Doctors</a>
+            <a href="medicines.html">Medicine</a>
             <a href="index.html#services">Services</a>
             <a href="login.html" class="btn btn-outline">Login</a>
             <a href="register.html" class="btn btn-primary">Register</a>

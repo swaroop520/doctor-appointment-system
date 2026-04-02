@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buy Medicines - Care Connect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="dashboard-page">
+    <nav class="navbar glass-effect">
+        <div class="logo">Care Connect <span style="font-size: 0.9rem; font-weight: 400; color: #fff;">| Medicines</span></div>
+        <div class="menu-toggle" id="mobile-menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="nav-links" id="nav-links">
+            <a href="index.html">Home</a>
+            <a href="doctors.html">Doctors</a>
+            <a href="medicines.html" class="active">Medicine</a>
+            <a href="index.html#services">Services</a>
+            <div id="authLinks" style="display: inline-block;">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </nav>
+
+    <main style="padding: 2rem 5%; max-width: 1400px; margin: auto;">
+        <!-- Search Section -->
+        <section class="search-section text-center" style="margin-bottom: 3rem;">
+            <h1 style="font-size: 2.5rem; margin-bottom: 1rem;"><span class="text-gradient">Order Medicines</span> Online</h1>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">Search for medicines by name or disease (e.g. fever, headache, cold)</p>
+            
+            <div class="search-bar-container" style="max-width: 700px; margin: 0 auto; position: relative;">
+                <input type="text" id="medicineSearch" placeholder="Search for medicines or health products..." 
+                    style="width: 100%; padding: 1.2rem 1.5rem; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1); border-radius: 50px; color: #fff; font-size: 1.1rem; transition: all 0.3s; outline: none;">
+                <button onclick="triggerSearch()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: var(--primary); border: none; padding: 0.8rem 1.5rem; border-radius: 40px; color: white; font-weight: 600; cursor: pointer; transition: 0.3s;">
+                    Search
+                </button>
+            </div>
+        </section>
+
+        <!-- Categories Section -->
+        <section style="margin-bottom: 4rem;">
+            <h2 style="font-size: 1.5rem; margin-bottom: 1.5rem;">Browse by Categories</h2>
+            <div class="specialties-grid">
+                <div class="specialty-card active" onclick="filterByCategory('All')">
+                    <span class="specialty-icon">📦</span>
+                    <span class="specialty-name">All Products</span>
+                </div>
+                <div class="specialty-card" onclick="filterByCategory('Fever')">
+                    <span class="specialty-icon">🤒</span>
+                    <span class="specialty-name">Fever</span>
+                </div>
+                <div class="specialty-card" onclick="filterByCategory('Cough & Cold')">
+                    <span class="specialty-icon">🤧</span>
+                    <span class="specialty-name">Cough & Cold</span>
+                </div>
+                <div class="specialty-card" onclick="filterByCategory('Pain Relief')">
+                    <span class="specialty-icon">💊</span>
+                    <span class="specialty-name">Pain Relief</span>
+                </div>
+                <div class="specialty-card" onclick="filterByCategory('Digestive')">
+                    <span class="specialty-icon">🥣</span>
+                    <span class="specialty-name">Digestive Care</span>
+                </div>
+                <div class="specialty-card" onclick="filterByCategory('Skin Care')">
+                    <span class="specialty-icon">🧼</span>
+                    <span class="specialty-name">Skin Care</span>
+                </div>
+                <div class="specialty-card" onclick="filterByCategory('Healthcare')">
+                    <span class="specialty-icon">🧴</span>
+                    <span class="specialty-name">Healthcare</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Results Section -->
+        <section>
+            <div id="resultsHeader" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.8rem;">Available Products</h2>
+                <span id="resultsCount" style="color: var(--text-muted); font-size: 0.9rem;">Showing all products</span>
+            </div>
+            <div id="medicineGrid" class="medicine-results">
+                <!-- Dynamically populated -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Cart UI -->
+    <div class="cart-overlay">
+        <div class="cart-btn" onclick="toggleCart()">
+            🛒
+            <div id="cartCounter" class="cart-count">0</div>
+        </div>
+    </div>
+
+    <div id="cartPanel" class="cart-panel">
+        <div class="cart-header">
+            <h3 style="margin: 0;">My Cart</h3>
+            <span onclick="toggleCart()" style="cursor: pointer; font-size: 1.5rem;">&times;</span>
+        </div>
+        <div id="cartItems" class="cart-items">
+            <!-- Cart items will appear here -->
+        </div>
+        <div class="cart-total">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; font-weight: 600;">
+                <span>Total Amount:</span>
+                <span id="cartTotal">₹0.00</span>
+            </div>
+            <button onclick="checkout()" class="btn btn-primary" style="width: 100%; padding: 1rem;">Proceed to Checkout</button>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        const allMedicines = [
+            { id: 1, name: "Paracetamol 650mg", category: "Fever", manufacturer: "CIPLA", price: 30.50, oldPrice: 45.00, icon: "💊", disease: ["fever", "headache", "body pain"] },
+            { id: 2, name: "Saridon Advance", category: "Pain Relief", manufacturer: "BAYER", price: 45.90, oldPrice: 54.00, icon: "🤕", disease: ["headache", "migraine", "pain"] },
+            { id: 3, name: "Vicks VapoRub 50g", category: "Cough & Cold", manufacturer: "P&G", price: 155.00, oldPrice: 175.00, icon: "💨", disease: ["cold", "cough", "nose block"] },
+            { id: 4, name: "Digene Gel 200ml", category: "Digestive", manufacturer: "ABBOTT", price: 210.00, oldPrice: 245.00, icon: "🧴", disease: ["acidity", "gas", "stomach pain"] },
+            { id: 5, name: "Zandu Balm 25ml", category: "Pain Relief", manufacturer: "EMAMI", price: 85.00, oldPrice: 95.00, icon: "🍃", disease: ["headache", "stress", "cold"] },
+            { id: 6, name: "Boroline Cream", category: "Skin Care", manufacturer: "GD PHARMA", price: 40.00, oldPrice: 45.00, icon: "🧴", disease: ["skin care", "cuts", "dry skin"] },
+            { id: 7, name: "Benadryl Syrup", category: "Cough & Cold", manufacturer: "J&J", price: 125.00, oldPrice: 140.00, icon: "🧪", disease: ["dry cough", "allergy"] },
+            { id: 8, name: "Electral Powder", category: "Healthcare", manufacturer: "FDC", price: 20.00, oldPrice: 22.00, icon: "⚡", disease: ["dehydration", "weakness"] },
+            { id: 9, name: "Dolo 650", category: "Fever", manufacturer: "MICRO LABS", price: 32.00, oldPrice: 40.00, icon: "💊", disease: ["fever", "covid symptoms", "pain"] },
+            { id: 10, name: "Pudin Hara", category: "Digestive", manufacturer: "DABUR", price: 15.00, oldPrice: 20.00, icon: "🌱", disease: ["indigestion", "gas"] }
+        ];
+
+        let cart = [];
+        let currentCategory = 'All';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            renderMedicines(allMedicines);
+            
+            document.getElementById('medicineSearch').addEventListener('input', applyFilters);
+            
+            // Mobile menu toggle logic
+            const mobileMenu = document.getElementById('mobile-menu');
+            const navLinks = document.getElementById('nav-links');
+            if(mobileMenu) {
+                mobileMenu.addEventListener('click', () => {
+                    navLinks.classList.toggle('active');
+                });
+            }
+        });
+
+        function checkAuth() {
+            const authLinks = document.getElementById('authLinks');
+            const token = localStorage.getItem('token');
+            const userName = localStorage.getItem('userName');
+            
+            if (token) {
+                authLinks.innerHTML = `
+                    <span style="color: var(--primary-light); margin-right: 15px;">Hi, ${userName}</span>
+                    <a href="patient-dashboard.html" class="btn btn-outline" style="font-size: 0.8rem; padding: 5px 15px;">Dashboard</a>
+                `;
+            } else {
+                authLinks.innerHTML = `
+                    <a href="login.html" class="btn btn-outline" style="font-size: 0.8rem; padding: 5px 15px;">Login</a>
+                `;
+            }
+        }
+
+        function renderMedicines(medicines) {
+            const grid = document.getElementById('medicineGrid');
+            grid.innerHTML = '';
+            
+            if (medicines.length === 0) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #aaa; padding: 3rem;">No medicines found matching your search. Try searching for symptoms like "fever" or "headache".</p>';
+                return;
+            }
+
+            medicines.forEach(med => {
+                const discount = Math.round(((med.oldPrice - med.price) / med.oldPrice) * 100);
+                grid.innerHTML += `
+                    <div class="medicine-card">
+                        <div class="medicine-img">${med.icon}</div>
+                        <div class="medicine-info">
+                            <span class="medicine-manufacturer">${med.manufacturer}</span>
+                            <h3>${med.name}</h3>
+                            <div class="medicine-price">
+                                ₹${med.price.toFixed(2)}
+                                <span class="medicine-old-price">₹${med.oldPrice.toFixed(2)}</span>
+                                <span class="medicine-discount">${discount}% OFF</span>
+                            </div>
+                            <button onclick="addToCart(${med.id})" class="btn btn-primary" style="width: 100%; margin-top: auto;">Add to Cart</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('resultsCount').textContent = `Showing ${medicines.length} products`;
+        }
+
+        function filterByCategory(category) {
+            currentCategory = category;
+            
+            // Update active state in UI
+            document.querySelectorAll('.specialty-card').forEach(card => {
+                card.classList.remove('active');
+                if (card.querySelector('.specialty-name').textContent === (category === 'All' ? 'All Products' : (category === 'Digestive' ? 'Digestive Care' : category))) {
+                    card.classList.add('active');
+                }
+            });
+            
+            applyFilters();
+        }
+
+        function triggerSearch() {
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('medicineSearch').value.toLowerCase().trim();
+            
+            let filtered = allMedicines;
+
+            if (currentCategory !== 'All') {
+                filtered = filtered.filter(med => med.category === currentCategory);
+            }
+
+            if (searchTerm) {
+                filtered = filtered.filter(med => {
+                    const nameMatch = med.name.toLowerCase().includes(searchTerm);
+                    const manufactMatch = med.manufacturer.toLowerCase().includes(searchTerm);
+                    const diseaseMatch = med.disease.some(d => d.includes(searchTerm));
+                    return nameMatch || manufactMatch || diseaseMatch;
+                });
+            }
+
+            renderMedicines(filtered);
+        }
+
+        function addToCart(medId) {
+            const med = allMedicines.find(m => m.id === medId);
+            const existing = cart.find(item => item.id === medId);
+            
+            if (existing) {
+                existing.quantity++;
+            } else {
+                cart.push({ ...med, quantity: 1 });
+            }
+            
+            updateCartUI();
+            
+            // Simple toast notification
+            const toast = document.createElement('div');
+            toast.style.cssText = "position: fixed; top: 100px; left: 50%; transform: translateX(-50%); background: var(--success); color: white; padding: 10px 25px; border-radius: 50px; z-index: 10002; animation: fadeInUp 0.3s forwards;";
+            toast.textContent = `${med.name} added to cart!`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
+        }
+
+        function updateCartUI() {
+            const count = cart.reduce((total, item) => total + item.quantity, 0);
+            document.getElementById('cartCounter').textContent = count;
+            
+            const cartItems = document.getElementById('cartItems');
+            cartItems.innerHTML = '';
+            
+            let total = 0;
+            
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<p style="text-align: center; color: #aaa; margin-top: 2rem;">Your cart is empty.</p>';
+            } else {
+                cart.forEach(item => {
+                    total += item.price * item.quantity;
+                    cartItems.innerHTML += `
+                        <div class="cart-item">
+                            <div>
+                                <div style="font-weight: 600;">${item.name}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-muted);">Qty: ${item.quantity}</div>
+                            </div>
+                            <div style="font-weight: bold; color: var(--primary-light);">₹${(item.price * item.quantity).toFixed(2)}</div>
+                        </div>
+                    `;
+                });
+            }
+            
+            document.getElementById('cartTotal').textContent = `₹${total.toFixed(2)}`;
+        }
+
+        function toggleCart() {
+            document.getElementById('cartPanel').classList.toggle('active');
+        }
+
+        function checkout() {
+            if (cart.length === 0) {
+                alert("Your cart is empty!");
+                return;
+            }
+            alert("This is a demo! In a real app, you would proceed to payment for ₹" + document.getElementById('cartTotal').textContent);
+            cart = [];
+            updateCartUI();
+            toggleCart();
+        }
+    </script>
+</body>
+
+</html>
