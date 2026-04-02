@@ -113,12 +113,15 @@
             localStorage.setItem('userId', data.id);
             localStorage.setItem('userName', data.name || data.username || "User");
 
+            const redirectPage = localStorage.getItem('redirectAfterLogin') || 'patient-dashboard.html';
+            localStorage.removeItem('redirectAfterLogin');
+
             if (cleanRole === 'ADMIN') {
                 window.location.href = 'admin-dashboard.html';
             } else if (cleanRole === 'DOCTOR') {
                 window.location.href = 'doctor-dashboard.html';
             } else {
-                window.location.href = 'patient-dashboard.html';
+                window.location.href = redirectPage;
             }
         }
 

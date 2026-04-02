@@ -393,6 +393,7 @@
             const role = localStorage.getItem('role');
             
             if (!token || role !== 'PATIENT') {
+                localStorage.setItem('redirectAfterLogin', 'doctors.html');
                 alert('Please Login as a Patient to consult with our specialists.');
                 window.location.href = 'login.html';
                 return;
