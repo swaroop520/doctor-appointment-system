@@ -42,6 +42,10 @@
                     <input type="password" id="password" required placeholder="Create a strong password" minlength="6">
                 </div>
                 <div class="form-group mt-3">
+                    <label for="mobileNumber">Phone Number (for Consultations)</label>
+                    <input type="text" id="mobileNumber" required placeholder="e.g. +919876543210">
+                </div>
+                <div class="form-group mt-3">
                     <label for="confirmPassword">Confirm Password</label>
                     <input type="password" id="confirmPassword" required placeholder="Re-enter password">
                 </div>
@@ -80,6 +84,7 @@
             const confirmPassword = document.getElementById('confirmPassword').value;
             const specialization = document.getElementById('specialization').value.trim();
             const licenseNumber = document.getElementById('licenseNumber').value.trim();
+            const mobileNumber = document.getElementById('mobileNumber').value.trim();
             const role = 'DOCTOR';
             const msgDiv = document.getElementById('regMsg');
 
@@ -95,7 +100,7 @@
             try {
                 const response = await fetchWithAuth('/auth/signup', {
                     method: 'POST',
-                    body: JSON.stringify({ name, email, password, role, specialization, licenseNumber })
+                    body: JSON.stringify({ name, email, password, role, specialization, licenseNumber, mobileNumber })
                 });
 
                 const data = await response.json();

@@ -374,8 +374,8 @@
                         
                         <div style="display: flex; flex-direction: column; gap: 10px;">
                             <div style="display: flex; gap: 10px;">
-                                <button onclick="startQuickCall('${doc.user.name}', true)" class="btn btn-primary" style="flex: 1; padding: 10px; font-size: 0.85rem; border-radius: 6px;">📹 Video Consult</button>
-                                <button onclick="startQuickCall('${doc.user.name}', false)" class="btn btn-outline" style="flex: 1; padding: 10px; font-size: 0.85rem; border-radius: 6px; border-color: var(--primary-light);">📞 Audio Consult</button>
+                                <button onclick="startQuickCall('${doc.user.name}', true, '${doc.user.mobileNumber || ''}')" class="btn btn-primary" style="flex: 1; padding: 10px; font-size: 0.85rem; border-radius: 6px;">📹 Video Consult</button>
+                                <button onclick="startQuickCall('${doc.user.name}', false, '${doc.user.mobileNumber || ''}')" class="btn btn-outline" style="flex: 1; padding: 10px; font-size: 0.85rem; border-radius: 6px; border-color: var(--primary-light);">📞 Audio Consult</button>
                             </div>
                             <button onclick="bookAppointment(${doc.id})" class="btn btn-outline" style="width: 100%; text-align: center; cursor: pointer; display: block; border-color: rgba(255,255,255,0.2); background: rgba(0,0,0,0.2);">Book Appointment</button>
                         </div>
@@ -387,7 +387,7 @@
         // Call Handling Logic
         let jitsiAPI = null;
 
-        function startQuickCall(doctorName, isVideo = true) {
+        function startQuickCall(doctorName, isVideo = true, phoneNumber = '') {
             // Security: Only logged-in patients can consult
             const token = localStorage.getItem('token');
             const role = localStorage.getItem('role');
@@ -399,13 +399,28 @@
                 return;
             }
 
+            // If phone number is available, contact it as requested
+            if (phoneNumber && phoneNumber.trim() !== '') {
+                const cleanPhone = phoneNumber.replace(/\D/g, ''); // digits only
+                
+                if (isVideo) {
+                    // WhatsApp Video Consult
+                    const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent("Hi Dr. " + doctorName + ", I'd like to start a Video Consultation via Care Connect.")}`;
+                    window.open(waUrl, '_blank');
+                } else {
+                    // Direct Audio Call (tel:)
+                    window.location.href = `tel:${cleanPhone}`;
+                }
+                return;
+            }
+
+            // Fallback to Jitsi if no phone number (for older profiles)
             const modal = document.getElementById('callModal');
             const overlay = document.getElementById('callingOverlay');
             modal.style.display = 'flex';
             overlay.style.display = 'flex';
 
             const domain = 'meet.jit.si';
-            // Unique room for quick consult: DoctorName + PatientName or RandomID
             const roomName = `CareConnect-Quick-${doctorName.replace(/\s+/g, '-')}-${Math.floor(Math.random()*10000)}`;
             
             const options = {
@@ -423,12 +438,9 @@
                 }
             };
 
-            // Remove existing if any
             if (jitsiAPI) jitsiAPI.dispose();
-            
             jitsiAPI = new JitsiMeetExternalAPI(domain, options);
 
-            // Hide overlay when someone joins or after timeout
             jitsiAPI.addEventListener('videoConferenceJoined', () => {
                 setTimeout(() => {
                     overlay.style.display = 'none';

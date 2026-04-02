@@ -88,6 +88,7 @@ public class AuthController {
         User user = new User();
         user.setName(signUpRequest.getName());
         user.setEmail(signUpRequest.getEmail());
+        user.setMobileNumber(signUpRequest.getMobileNumber());
         user.setPassword(encoder.encode(signUpRequest.getPassword()));
 
         // Assign role — default to PATIENT if invalid

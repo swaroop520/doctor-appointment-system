@@ -19,6 +19,8 @@ public class SignupRequest {
     @NotBlank
     private String role; // ADMIN, DOCTOR, PATIENT
 
+    private String mobileNumber;
+
     // For Doctors only
     private String specialization;
     private String licenseNumber;
