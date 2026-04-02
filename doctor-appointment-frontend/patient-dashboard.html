@@ -218,6 +218,12 @@
                     doctors.forEach(doc => {
                         select.innerHTML += `<option value="${doc.id}">Dr. ${doc.user.name} - ${doc.specialization}</option>`;
                     });
+                    
+                    const selectedDoctorId = localStorage.getItem('selectedDoctorId');
+                    if (selectedDoctorId) {
+                        select.value = selectedDoctorId;
+                        localStorage.removeItem('selectedDoctorId'); // clear after pre-filling to avoid sticking
+                    }
                 }
             } catch (e) { console.error("Could not load doctors", e); }
         }
