@@ -192,6 +192,16 @@
             applyFilters();
         }
 
+        const specialtyKeywords = {
+            'General Physician': ['physician', 'general'],
+            'Dermatology': ['dermatolog', 'skin'],
+            'Cardiology': ['cardiolog', 'heart'],
+            'Orthopaedics': ['orthopaedic', 'orthopedic', 'bone'],
+            'Paediatrics': ['paediatric', 'pediatric', 'child'],
+            'Neurology': ['neurolog', 'brain', 'nerve'],
+            'ENT': ['ent', 'ear', 'nose', 'throat']
+        };
+
         function applyFilters() {
             const searchTerm = document.getElementById('doctorSearch').value.toLowerCase();
             const grid = document.getElementById('doctorsGrid');
@@ -199,11 +209,12 @@
             let filtered = allApprovedDoctors;
 
             if (currentSpecialty !== 'All') {
-                filtered = filtered.filter(doc => 
-                    doc.specialization && doc.specialization.toLowerCase().includes(currentSpecialty.toLowerCase()) || 
-                    // Handle General Physician mappings if exact name differs
-                    (currentSpecialty === 'General Physician' && doc.specialization && doc.specialization.toLowerCase().includes('physician'))
-                );
+                const keywords = specialtyKeywords[currentSpecialty] || [currentSpecialty.toLowerCase()];
+                filtered = filtered.filter(doc => {
+                    if (!doc.specialization) return false;
+                    const spec = doc.specialization.toLowerCase();
+                    return keywords.some(keyword => spec.includes(keyword));
+                });
             }
 
             if (searchTerm) {
