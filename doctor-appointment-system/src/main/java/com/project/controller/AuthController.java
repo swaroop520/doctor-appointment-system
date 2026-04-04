@@ -1,5 +1,7 @@
 package com.project.controller;
 
+import com.project.dto.ForgotPasswordRequest;
+import com.project.dto.ResetPasswordRequest;
 import com.project.dto.JwtResponse;
 import com.project.dto.LoginRequest;
 import com.project.dto.MessageResponse;
@@ -22,6 +24,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -39,6 +45,8 @@ public class AuthController {
 
     @Autowired
     JwtUtils jwtUtils;
+
+    private static final ConcurrentHashMap<String, String> otpStore = new ConcurrentHashMap<>();
 
     @GetMapping("/ping")
     public ResponseEntity<?> ping() {
@@ -123,5 +131,57 @@ public class AuthController {
         }
 
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        String identifier = request.getIdentifier();
+        Optional<User> userOpt = userRepository.findByEmail(identifier);
+        if (userOpt.isEmpty()) {
+            userOpt = userRepository.findByMobileNumber(identifier);
+        }
+
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: User with this Email/Mobile not found!"));
+        }
+
+        // Generate 6-digit OTP
+        String otp = String.format("%06d", new Random().nextInt(999999));
+        otpStore.put(identifier, otp);
+
+        // Simulate sending — print to console for demo
+        System.out.println("==========================================");
+        System.out.println("FORGOT PASSWORD OTP FOR " + identifier + ": " + otp);
+        System.out.println("==========================================");
+
+        return ResponseEntity.ok(new MessageResponse("OTP sent successfully to your registered Email/Mobile (check console logs)"));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        String identifier = request.getIdentifier();
+        String storedOtp = otpStore.get(identifier);
+
+        if (storedOtp == null || !storedOtp.equals(request.getOtp())) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: Invalid or expired OTP!"));
+        }
+
+        Optional<User> userOpt = userRepository.findByEmail(identifier);
+        if (userOpt.isEmpty()) {
+            userOpt = userRepository.findByMobileNumber(identifier);
+        }
+
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: Something went wrong, user not found."));
+        }
+
+        User user = userOpt.get();
+        user.setPassword(encoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        // Clear OTP after successful use
+        otpStore.remove(identifier);
+
+        return ResponseEntity.ok(new MessageResponse("Password has been reset successfully. You can now login."));
     }
 }
