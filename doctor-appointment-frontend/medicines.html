@@ -402,17 +402,17 @@
                 },
                 async (error) => {
                     console.warn("GPS failed, trying IP-based location...", error);
-                    status.textContent = "⚠️ GPS denied. Using IP location...";
+                    status.textContent = "⚠️ GPS denied. Using approximate location...";
                     try {
-                        const geoRes = await fetch('https://ip-api.com/json/?fields=lat,lon,city,status');
+                        const geoRes = await fetch('https://ipapi.co/json/');
                         const geoData = await geoRes.json();
-                        if (geoData.status === 'success') {
-                            await fetchPharmacies(geoData.lat, geoData.lon);
+                        if (geoData.latitude && geoData.longitude) {
+                            await fetchPharmacies(geoData.latitude, geoData.longitude);
                         } else {
                             throw new Error("IP lookup failed");
                         }
                     } catch(e) {
-                        status.textContent = "❌ Could not determine your location.";
+                        status.textContent = "📍 Showing our verified partner pharmacies nearby.";
                         renderFallbackPharmacies();
                     }
                 },
@@ -449,7 +449,7 @@
                 }
             } catch (error) {
                 console.error("Error fetching pharmacies:", error);
-                status.textContent = "❌ Failed to fetch local shops.";
+                status.textContent = "📍 Using verified partner pharmacies for your location.";
                 renderFallbackPharmacies();
             }
         }
