@@ -1,7 +1,5 @@
 package com.project.controller;
 
-import com.project.dto.ForgotPasswordRequest;
-import com.project.dto.ResetPasswordRequest;
 import com.project.dto.JwtResponse;
 import com.project.dto.LoginRequest;
 import com.project.dto.MessageResponse;
@@ -13,7 +11,6 @@ import com.project.repository.DoctorRepository;
 import com.project.repository.UserRepository;
 import com.project.security.JwtUtils;
 import com.project.security.UserDetailsImpl;
-import com.project.service.EmailService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -24,10 +21,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Optional;
-import java.util.Random;
-import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -46,11 +39,6 @@ public class AuthController {
 
     @Autowired
     JwtUtils jwtUtils;
-
-    @Autowired
-    private EmailService emailService;
-
-    private static final ConcurrentHashMap<String, String> otpStore = new ConcurrentHashMap<>();
 
     @GetMapping("/ping")
     public ResponseEntity<?> ping() {
@@ -137,62 +125,4 @@ public class AuthController {
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
 
-    @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
-        String identifier = request.getIdentifier();
-        Optional<User> userOpt = userRepository.findByEmail(identifier);
-        if (userOpt.isEmpty()) {
-            userOpt = userRepository.findByMobileNumber(identifier);
-        }
-
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: User with this Email/Mobile not found!"));
-        }
-
-        // Generate 6-digit OTP
-        String otp = String.format("%06d", new Random().nextInt(999999));
-        otpStore.put(identifier, otp);
-
-        // Simulate/Send code
-        System.out.println("==========================================");
-        System.out.println("VERIFICATION CODE FOR " + identifier + ": " + otp);
-        System.out.println("==========================================");
-
-        // Actual delivery if email
-        if (identifier.contains("@")) {
-            emailService.sendOtpEmail(identifier, otp);
-        } else {
-            System.out.println("SMS SIMULATION: OTP 123456 sent to mobile " + identifier);
-        }
-
-        return ResponseEntity.ok(new MessageResponse("Verification code sent to your registered Email/Mobile."));
-    }
-
-    @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
-        String identifier = request.getIdentifier();
-        String storedOtp = otpStore.get(identifier);
-
-        if (storedOtp == null || !storedOtp.equals(request.getOtp())) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Invalid or expired OTP!"));
-        }
-
-        Optional<User> userOpt = userRepository.findByEmail(identifier);
-        if (userOpt.isEmpty()) {
-            userOpt = userRepository.findByMobileNumber(identifier);
-        }
-
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Something went wrong, user not found."));
-        }
-
-        User user = userOpt.get();
-        user.setPassword(encoder.encode(request.getNewPassword()));
-        userRepository.save(user);
-
-        // Clear OTP after successful use
-        otpStore.remove(identifier);
-
-        return ResponseEntity.ok(new MessageResponse("Password has been reset successfully. You can now login."));
-    }
 }
