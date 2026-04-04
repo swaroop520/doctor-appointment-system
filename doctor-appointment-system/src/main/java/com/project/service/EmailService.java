@@ -3,6 +3,7 @@ package com.project.service;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -14,15 +15,20 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
+    @Value("${spring.mail.username}")
+    private String senderEmail;
+
     @Async
     public void sendOtpEmail(String toEmail, String otp) {
         if (toEmail == null || toEmail.isEmpty()) {
             return;
         }
         try {
+            System.out.println("OTP DELIVERY: Attempting to send email to " + toEmail + " from " + senderEmail);
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
+            helper.setFrom(senderEmail);
             helper.setTo(toEmail);
             helper.setSubject("Your Verification Code - Care Connect");
 
@@ -37,8 +43,9 @@ public class EmailService {
 
             helper.setText(htmlContent, true);
             mailSender.send(message);
+            System.out.println("OTP DELIVERY SUCCESS: Email sent to " + toEmail);
         } catch (MessagingException e) {
-            System.err.println("Failed to send OTP email to " + toEmail + ": " + e.getMessage());
+            System.err.println("OTP DELIVERY FAILED: " + toEmail + " -> " + e.getMessage());
             // We log but don't throw to prevent blocking the user if Mail Server is down
             // They can still see the OTP in console as a fallback in this FYP demo
         }
