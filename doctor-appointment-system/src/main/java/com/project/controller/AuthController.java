@@ -13,6 +13,7 @@ import com.project.repository.DoctorRepository;
 import com.project.repository.UserRepository;
 import com.project.security.JwtUtils;
 import com.project.security.UserDetailsImpl;
+import com.project.service.EmailService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +46,9 @@ public class AuthController {
 
     @Autowired
     JwtUtils jwtUtils;
+
+    @Autowired
+    private EmailService emailService;
 
     private static final ConcurrentHashMap<String, String> otpStore = new ConcurrentHashMap<>();
 
@@ -149,12 +153,19 @@ public class AuthController {
         String otp = String.format("%06d", new Random().nextInt(999999));
         otpStore.put(identifier, otp);
 
-        // Simulate sending — print to console for demo
+        // Simulate/Send code
         System.out.println("==========================================");
-        System.out.println("FORGOT PASSWORD OTP FOR " + identifier + ": " + otp);
+        System.out.println("VERIFICATION CODE FOR " + identifier + ": " + otp);
         System.out.println("==========================================");
 
-        return ResponseEntity.ok(new MessageResponse("OTP sent successfully to your registered Email/Mobile (check console logs)"));
+        // Actual delivery if email
+        if (identifier.contains("@")) {
+            emailService.sendOtpEmail(identifier, otp);
+        } else {
+            System.out.println("SMS SIMULATION: OTP 123456 sent to mobile " + identifier);
+        }
+
+        return ResponseEntity.ok(new MessageResponse("Verification code sent to your registered Email/Mobile."));
     }
 
     @PostMapping("/reset-password")
