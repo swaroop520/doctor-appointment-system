@@ -136,6 +136,9 @@
                     <button onclick="searchHospitalsByText()" class="btn btn-primary" style="padding: 0 15px;">Search</button>
                 </div>
                 <div style="text-align: center; margin-bottom: 10px; color: #888; font-size: 0.8rem;">— OR —</div>
+                <div id="detectedLocation" style="margin-bottom: 10px; font-size: 0.85rem; color: #fbbf24; text-align: center; display: none; padding: 8px; background: rgba(251, 191, 36, 0.1); border-radius: 8px; border: 1px solid rgba(251, 191, 36, 0.2);">
+                    📍 Proximity Center: <span id="locationName" style="font-weight: bold;">Detecting...</span>
+                </div>
                 <button onclick="findNearbyHospitals()" id="findHospitalsBtn" class="btn btn-outline" style="width: 100%; border-color: var(--primary); color: var(--primary-light); margin-bottom: 10px;">
                     ⚡ Auto-Detect My Location
                 </button>
@@ -164,24 +167,28 @@
         async function searchHospitalsByText() {
             const queryText = document.getElementById('manualLocation').value.trim();
             const list = document.getElementById('hospitalsList');
-            if (!queryText) return alert("Please enter a location name.");
+            const locDiv = document.getElementById('detectedLocation');
+            const locName = document.getElementById('locationName');
+
+            if (!queryText) return alert("Please enter a city or area name (e.g., Kadapa).");
 
             list.innerHTML = `<p style="color: #aaa; text-align: center; font-size: 0.9rem;">🌎 Geocoding '${queryText}'...</p>`;
             
             try {
-                // Use Nominatim for geocoding
                 const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(queryText)}`);
                 const data = await res.json();
                 if (data && data.length > 0) {
                     const lat = data[0].lat;
                     const lon = data[0].lon;
-                    list.innerHTML = `<p style="color: var(--primary-light); text-align: center; font-size: 0.8rem;">📍 Location identified: ${data[0].display_name}</p>`;
+                    locDiv.style.display = 'block';
+                    locName.textContent = data[0].display_name.split(',')[0];
+                    list.innerHTML = `<p style="color: var(--primary-light); text-align: center; font-size: 0.8rem;">✅ Location set to: ${data[0].display_name}</p>`;
                     await fetchHospitals(lat, lon, true);
                 } else {
-                    list.innerHTML = `<p style="color: var(--danger); text-align: center; font-size: 0.9rem;">❌ Location not found. Try a different name.</p>`;
+                    list.innerHTML = `<p style="color: var(--danger); text-align: center; font-size: 0.9rem;">❌ Location not found. Please try a major city name.</p>`;
                 }
             } catch (err) {
-                list.innerHTML = `<p style="color: var(--danger); text-align: center; font-size: 0.9rem;">Error finding location.</p>`;
+                list.innerHTML = `<p style="color: var(--danger); text-align: center; font-size: 0.9rem;">Error connecting to location service.</p>`;
             }
         }
 
@@ -242,7 +249,11 @@
                         btn.textContent = "⚡ Auto-Detect My Location";
                         return; // Found results, exit function
                     } else if (i === mirrors.length - 1) {
-                        list.innerHTML += `<p style="color: #fbbf24; text-align: center; font-size: 0.9rem;">🚫 No hospitals found within a 5km radius after checking all servers.</p>`;
+                        list.innerHTML = isManual ? list.innerHTML : '';
+                        list.innerHTML += `<div style="text-align: center; padding: 15px;">
+                            <p style="color: #fbbf24; font-size: 0.9rem; margin-bottom: 10px;">🚫 No hospitals found with a 5km radius of this point.</p>
+                            <p style="color: #aaa; font-size: 0.8rem;">If this location seems wrong (e.g. showing 100km away), please <b>type your city manually</b> in the search box above.</p>
+                        </div>`;
                     }
                 } catch (error) {
                     console.warn(`Mirror ${i} failed:`, error);
@@ -298,6 +309,8 @@
         async function findNearbyHospitals() {
             const btn = document.getElementById('findHospitalsBtn');
             const list = document.getElementById('hospitalsList');
+            const locDiv = document.getElementById('detectedLocation');
+            const locName = document.getElementById('locationName');
             
             btn.disabled = true;
             btn.textContent = "Locating...";
@@ -311,20 +324,28 @@
 
             navigator.geolocation.getCurrentPosition(
                 async (position) => {
-                    await fetchHospitals(position.coords.latitude, position.coords.longitude);
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    locDiv.style.display = 'block';
+                    locName.textContent = `${lat.toFixed(2)}, ${lon.toFixed(2)} (GPS)`;
+                    await fetchHospitals(lat, lon);
                 },
                 async (error) => {
                     console.warn("GPS failed, trying IP...", error);
-                    list.innerHTML = '<p style="color: #fbbf24; text-align: center; font-size: 0.9rem;">⚠️ GPS failed. Using IP location...</p>';
+                    list.innerHTML = '<p style="color: #fbbf24; text-align: center; font-size: 0.9rem;">⚠️ GPS failed. Using approximate IP location...</p>';
                     try {
                         const geoRes = await fetch('https://ip-api.com/json/?fields=lat,lon,city,status');
                         const geoData = await geoRes.json();
                         if (geoData.status === 'success') {
-                            list.innerHTML = `<p style="color: #aaa; text-align: center; font-size: 0.8rem;">📍 Detected City: ${geoData.city}</p>`;
+                            locDiv.style.display = 'block';
+                            locName.textContent = geoData.city;
                             await fetchHospitals(geoData.lat, geoData.lon);
                         } else throw new Error();
                     } catch(e) {
-                        list.innerHTML = '<p style="color: var(--danger); text-align: center; font-size: 0.9rem;">❌ Could not determine location. Use manual search.</p>';
+                        list.innerHTML = '<div style="text-align: center; padding: 15px;">
+                            <p style="color: var(--danger); font-size: 0.9rem;">❌ Could not determine location automatically.</p>
+                            <p style="color: #aaa; font-size: 0.8rem;">Please <b>type your city name</b> in the search box above (e.g., Kadapa).</p>
+                        </div>';
                         btn.disabled = false;
                     }
                 },
