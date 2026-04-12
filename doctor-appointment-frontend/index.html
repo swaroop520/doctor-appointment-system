@@ -345,10 +345,10 @@
                             await fetchHospitals(geoData.lat, geoData.lon);
                         } else throw new Error();
                     } catch(e) {
-                        list.innerHTML = '<div style="text-align: center; padding: 15px;">
+                        list.innerHTML = `<div style="text-align: center; padding: 15px;">
                             <p style="color: var(--danger); font-size: 0.9rem;">❌ Could not determine location automatically.</p>
                             <p style="color: #aaa; font-size: 0.8rem;">Please <b>type your town name</b> (e.g., Kalikiri) in the search box above.</p>
-                        </div>';
+                        </div>`;
                         btn.disabled = false;
                     }
                 },
