@@ -129,7 +129,7 @@
             </div>
 
             <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem; margin-top: 1.5rem; text-align: left;">
-                <h4 style="color: #fff; margin-bottom: 0.8rem;">📍 Nearby Hospitals (Strict 5km Range)</h4>
+                <h4 style="color: #fff; margin-bottom: 0.8rem;">📍 Nearby Hospitals (10km Range)</h4>
                 <div style="display: flex; gap: 8px; margin-bottom: 10px;">
                     <input type="text" id="manualLocation" placeholder="Enter city or area (e.g. Tirupati)" 
                         style="flex: 1; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
@@ -201,7 +201,7 @@
                 'https://overpass.kumi.systems/api/interpreter'
             ];
             
-            list.innerHTML += '<p id="searchStatus" style="color: #aaa; text-align: center; font-size: 0.9rem;">🏥 Searching for hospitals within 5km...</p>';
+            list.innerHTML += '<p id="searchStatus" style="color: #aaa; text-align: center; font-size: 0.9rem;">🏥 Searching for hospitals within 10km...</p>';
             
             for (let i = 0; i < mirrors.length; i++) {
                 try {
@@ -210,7 +210,7 @@
                         if (status) status.innerHTML = `🏥 Server busy, trying backup server ${i}...`;
                     }
 
-                    const query = `[out:json][timeout:25];nwr(around:5000,${lat},${lon})["amenity"="hospital"];out center;`;
+                    const query = `[out:json][timeout:25];nwr(around:10000,${lat},${lon})["amenity"="hospital"];out center;`;
                     const response = await fetch(`${mirrors[i]}?data=${encodeURIComponent(query)}`);
                     
                     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -236,7 +236,7 @@
                             card.innerHTML = `
                                 <div style="color: #fff; font-weight: 600; margin-bottom: 4px; display: flex; justify-content: space-between;">
                                     <span>${name}</span>
-                                    <span style="font-size: 0.7rem; color: var(--primary-light);">5km Range</span>
+                                    <span style="font-size: 0.7rem; color: var(--primary-light);">10km Range</span>
                                 </div>
                                 <div style="font-size: 0.8rem; color: #aaa; margin-bottom: 8px;">📞 ${phone} ${address ? '| 📍 ' + address : ''}</div>
                                 <div style="display: flex; gap: 8px;">
@@ -251,8 +251,8 @@
                     } else if (i === mirrors.length - 1) {
                         list.innerHTML = isManual ? list.innerHTML : '';
                         list.innerHTML += `<div style="text-align: center; padding: 15px;">
-                            <p style="color: #fbbf24; font-size: 0.9rem; margin-bottom: 10px;">🚫 No hospitals found with a 5km radius of this point.</p>
-                            <p style="color: #aaa; font-size: 0.8rem;">If this location seems wrong (e.g. showing 100km away), please <b>type your city manually</b> in the search box above.</p>
+                            <p style="color: #fbbf24; font-size: 0.9rem; margin-bottom: 10px;">🚫 No hospitals found with a 10km radius of this point.</p>
+                            <p style="color: #aaa; font-size: 0.8rem;">If this location seems wrong, please <b>type your city manually</b> (e.g., Kalikiri) in the search box above.</p>
                         </div>`;
                     }
                 } catch (error) {
@@ -339,12 +339,15 @@
                         if (geoData.status === 'success') {
                             locDiv.style.display = 'block';
                             locName.textContent = geoData.city;
+                            // Optionally pre-fill manual search box if it's empty
+                            const manualInp = document.getElementById('manualLocation');
+                            if (!manualInp.value) manualInp.value = geoData.city;
                             await fetchHospitals(geoData.lat, geoData.lon);
                         } else throw new Error();
                     } catch(e) {
                         list.innerHTML = '<div style="text-align: center; padding: 15px;">
                             <p style="color: var(--danger); font-size: 0.9rem;">❌ Could not determine location automatically.</p>
-                            <p style="color: #aaa; font-size: 0.8rem;">Please <b>type your city name</b> in the search box above (e.g., Kadapa).</p>
+                            <p style="color: #aaa; font-size: 0.8rem;">Please <b>type your town name</b> (e.g., Kalikiri) in the search box above.</p>
                         </div>';
                         btn.disabled = false;
                     }
