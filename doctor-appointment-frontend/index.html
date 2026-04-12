@@ -247,7 +247,47 @@
                 } catch (error) {
                     console.warn(`Mirror ${i} failed:`, error);
                     if (i === mirrors.length - 1) {
-                        list.innerHTML += '<p style="color: var(--danger); text-align: center; font-size: 0.9rem;">❌ All servers are busy. Please try manual search or wait a moment.</p>';
+                        try {
+                            const status = document.getElementById('searchStatus');
+                            if (status) status.innerHTML = `🕵️ All data servers busy. Using ultimate search fallback...`;
+                            
+                            // ULTIMATE FALLBACK: Use Nominatim Search directly
+                            const nomRes = await fetch(`https://nominatim.openstreetmap.org/search?q=hospital&format=json&limit=10&lat=${lat}&lon=${lon}`);
+                            const nomData = await nomRes.json();
+                            
+                            if (nomData && nomData.length > 0) {
+                                list.innerHTML = isManual ? list.innerHTML : '';
+                                const resultsHeader = document.createElement('p');
+                                resultsHeader.style.cssText = "color: #fbbf24; font-size: 0.85rem; margin-bottom: 10px; text-align: center;";
+                                resultsHeader.textContent = `✅ Found ${nomData.length} hospitals via Search Fallback!`;
+                                list.appendChild(resultsHeader);
+
+                                nomData.forEach(hospital => {
+                                    const name = hospital.display_name.split(',')[0] || "Hospital";
+                                    const address = hospital.display_name.split(',').slice(1, 3).join(',') || "";
+                                    
+                                    const card = document.createElement('div');
+                                    card.style.cssText = "background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.1);";
+                                    card.innerHTML = `
+                                        <div style="color: #fff; font-weight: 600; margin-bottom: 4px; display: flex; justify-content: space-between;">
+                                            <span>${name}</span>
+                                            <span style="font-size: 0.7rem; color: #fbbf24;">Local Search</span>
+                                        </div>
+                                        <div style="font-size: 0.8rem; color: #aaa; margin-bottom: 8px;">📍 ${address}</div>
+                                        <div style="display: flex; gap: 8px;">
+                                            <a href="https://www.google.com/maps/dir/?api=1&destination=${hospital.lat},${hospital.lon}" target="_blank" class="btn" style="flex: 1; font-size: 0.75rem; padding: 5px; background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.4); color: #fff; text-decoration: none; text-align: center; border-radius: 4px;">Navigate</a>
+                                        </div>
+                                    `;
+                                    list.appendChild(card);
+                                });
+                                btn.disabled = false;
+                                return;
+                            } else {
+                                throw new Error("Nominatim also failed");
+                            }
+                        } catch (finalErr) {
+                            list.innerHTML += '<p style="color: var(--danger); text-align: center; font-size: 0.9rem;">❌ All systems are currently busy. Please type your city in the search box above manually.</p>';
+                        }
                     }
                 }
             }
