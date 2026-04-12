@@ -1,5 +1,8 @@
 console.log("App Initialized");
 
+// Configuration - Change this if you want to force production
+const CLOUD_API_URL = "https://doctor-appointment-system-yhsg.onrender.com/api";
+
 // Base URL for API calls
 const getApiBaseUrl = () => {
     // Priority 1: Check for manual override in URL parameter (?api=http://...)
@@ -10,6 +13,12 @@ const getApiBaseUrl = () => {
         return manualApi;
     }
 
+    // Force Production check (useful for "Final Link" demo)
+    if (urlParams.get('env') === 'prod') {
+        console.log("Environment: Forced Production. Using:", CLOUD_API_URL);
+        return CLOUD_API_URL;
+    }
+
     const hostname = window.location.hostname;
     const protocol = window.location.protocol;
 
@@ -18,19 +27,20 @@ const getApiBaseUrl = () => {
     const isLocalProtocol = protocol === 'file:' || protocol.startsWith('chrome-extension') || protocol.startsWith('vscode-resource');
     const isLocalHost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '' || hostname.includes('ngrok-free.app');
 
+    // SMART FALLBACK: If we are local but want to use the cloud backend (common for demoing frontend only)
     if (isLocalHost || isLocalProtocol || isLocalIP) {
-        console.log("Environment: Local Development. Using localhost:8080");
+        console.log("Environment: Local Development. Defaulting to localhost:8080 (fallback to cloud enabled).");
+        // If you are having trouble with localhost, you can append ?env=prod to the URL
         return "http://localhost:8080/api";
     }
     
     // Priority 3: Production/Remote fallback
-    console.warn("Environment: Production/Remote. Using Render URL. (Check F12 if this is unexpected)");
-    return "https://doctor-appointment-system-yhsg.onrender.com/api";
+    return CLOUD_API_URL;
 };
 
 window.API_BASE_URL = getApiBaseUrl();
-console.log("API Base URL set to:", window.API_BASE_URL);
 const API_BASE_URL = window.API_BASE_URL;
+console.log("🚀 API Base URL set to:", API_BASE_URL);
 
 // Connection Tester for Troubleshooting
 async function testConnection() {
