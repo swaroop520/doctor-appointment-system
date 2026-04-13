@@ -49,6 +49,22 @@ Upon initial launch of both servers:
 Navigate to the `Register` page (`http://localhost:3000/register.html`). Create your first account continuously selecting **Admin** as the account type.
 
 ---
+## 🔄 Ensuring 24/7 Operation
+
+### 1. Local Environment (Your Laptop)
+To keep the server running continuously and auto-restart on crashes:
+1. Double-click the `keep_alive.bat` file in the root directory.
+2. This will start the maven process and restart it instantly if it ever stops.
+
+### 2. Cloud Environment (Render.com)
+Cloud providers sleep after 15 mins of inactivity. To prevent this:
+1. Sign up for a free account at [Cron-job.org](https://cron-job.org/).
+2. Create a new "Cronjob" with these settings:
+   - **URL**: `https://doctor-appointment-system-yhsg.onrender.com/api/auth/ping`
+   - **Schedule**: Every 5 or 10 minutes.
+3. This will "tickle" the server regularly, keeping it awake 24/7.
+
+---
 **Tech Stack Reminder:**
 * **Backend:** Java 17, Spring Boot 3.2.x, Security, Data JPA, JWT, MySQL.
 * **Frontend:** HTML5, Vanilla CSS, JS (Fetch API).

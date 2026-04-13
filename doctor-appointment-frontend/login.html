@@ -187,7 +187,7 @@
             e.preventDefault();
             const msgDiv = document.getElementById('troubleshootMsg');
             msgDiv.style.display = 'block';
-            msgDiv.innerHTML = "🔍 Running diagnostics...";
+            msgDiv.innerHTML = "🔍 Probing " + (window.API_BASE_URL.includes('localhost') ? "Local Backend" : "Cloud Backend") + "...";
             msgDiv.style.color = "var(--primary-light)";
 
             const result = await window.testConnection();
@@ -195,7 +195,7 @@
                 msgDiv.innerHTML = "✅ " + result.message;
                 msgDiv.style.color = "#4ade80";
             } else {
-                msgDiv.innerHTML = "❌ " + result.message;
+                msgDiv.innerHTML = "❌ " + result.message + "<br><br><small style='opacity: 0.8;'>If you are trying to use the local server, make sure it is running on port 8080. If using cloud, it might be cold-starting.</small>";
                 msgDiv.style.color = "#f87171";
             }
         }

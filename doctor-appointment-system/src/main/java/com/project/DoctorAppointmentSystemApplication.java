@@ -10,13 +10,39 @@ import com.project.entity.Role;
 import com.project.entity.Doctor;
 import com.project.repository.UserRepository;
 import com.project.repository.DoctorRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.web.client.RestTemplate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SpringBootApplication
+@EnableScheduling
 public class DoctorAppointmentSystemApplication {
+
+    private static final Logger logger = LoggerFactory.getLogger(DoctorAppointmentSystemApplication.class);
 
 	public static void main(String[] args) {
 		SpringApplication.run(DoctorAppointmentSystemApplication.class, args);
 	}
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    // Self-ping task to prevent Render/Heroku from sleeping
+    // Runs every 10 minutes (600,000 milliseconds)
+    @Scheduled(fixedRate = 600000)
+    public void selfPing() {
+        try {
+            // Replace with your actual Render URL if deployed
+            String url = "https://doctor-appointment-system-yhsg.onrender.com/api/auth/ping";
+            restTemplate.getForObject(url, String.class);
+            logger.info("Self-ping successful: Server is awake.");
+        } catch (Exception e) {
+            logger.warn("Self-ping failed (expected if local or server just starting): {}", e.getMessage());
+        }
+    }
 
 	@Bean
 	CommandLineRunner initDatabase(UserRepository userRepository, DoctorRepository doctorRepository,

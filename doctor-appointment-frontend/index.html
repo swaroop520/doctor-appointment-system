@@ -132,15 +132,22 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
                     <h4 style="color: #fff; margin: 0;">📍 Nearby Hospitals</h4>
                     <select id="searchRadius" onchange="findNearbyHospitals()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 4px; padding: 2px 5px; font-size: 0.8rem;">
-                        <option value="2000">2km Range</option>
                         <option value="5000">5km Range</option>
                         <option value="10000" selected>10km Range</option>
+                        <option value="20000">20km Range</option>
+                        <option value="50000">50km Range</option>
                     </select>
                 </div>
-                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                    <input type="text" id="manualLocation" placeholder="Enter city or area (e.g. Tirupati)" 
+                <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+                    <input type="text" id="manualLocation" placeholder="Enter city or area (e.g. Kalikiri)" 
                         style="flex: 1; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
                     <button onclick="searchHospitalsByText()" class="btn btn-primary" style="padding: 0 15px;">Search</button>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 15px; justify-content: center;">
+                    <button onclick="quickSearch('Kalikiri')" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); color: var(--primary-light); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; cursor: pointer;">Kalikiri</button>
+                    <button onclick="quickSearch('Madanapalle')" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); color: var(--primary-light); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; cursor: pointer;">Madanapalle</button>
+                    <button onclick="quickSearch('Tirupati')" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); color: var(--primary-light); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; cursor: pointer;">Tirupati</button>
+                    <button onclick="quickSearch('Kadapa')" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); color: var(--primary-light); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; cursor: pointer;">Kadapa</button>
                 </div>
                 <div style="text-align: center; margin-bottom: 10px; color: #888; font-size: 0.8rem;">— OR —</div>
                 <div id="detectedLocation" style="margin-bottom: 10px; font-size: 0.85rem; color: #fbbf24; text-align: center; display: none; padding: 8px; background: rgba(251, 191, 36, 0.1); border-radius: 8px; border: 1px solid rgba(251, 191, 36, 0.2);">
@@ -180,6 +187,11 @@
                       Math.sin(dLon / 2) * Math.sin(dLon / 2);
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
             return R * c;
+        }
+
+        function quickSearch(city) {
+            document.getElementById('manualLocation').value = city;
+            searchHospitalsByText();
         }
 
         async function searchHospitalsByText() {
